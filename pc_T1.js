@@ -8,9 +8,15 @@ var direction = 'bb';
 
 var epeeCD = true;
 
-var soulCollected = false;
+var iconSouls;
+var souls = 0;
+var soulsText;
 
 var playerApproach = false;
+
+var tonneau1;
+var tonneau2;
+var tonneau3;
 
 class pc_T1 extends Phaser.Scene{
     constructor(){
@@ -32,6 +38,15 @@ class pc_T1 extends Phaser.Scene{
 
         this.load.spritesheet('epee', 'assets/placeholder/epee.png', { frameWidth: 300, frameHeight: 200 });
         this.load.spritesheet('ennemi', 'assets/placeholder/phe_deplacement.png', { frameWidth: 100, frameHeight: 150 });
+        this.load.spritesheet('tonneau', 'assets/placeholder/ph_tonneau.png', { frameWidth: 100, frameHeight: 100 });
+
+        this.load.spritesheet('iconSouls', 'assets/placeholder/ph_iconSouls.png', { frameWidth: 100, frameHeight: 100 });
+        this.load.spritesheet('iconEpee', 'assets/placeholder/ph_iconEpee.png', { frameWidth: 200, frameHeight: 200 });
+        this.load.spritesheet('iconPistolet', 'assets/placeholder/ph_iconPistolet.png', { frameWidth: 200, frameHeight: 200 });
+        this.load.spritesheet('iconBarril', 'assets/placeholder/ph_iconBarril.png', { frameWidth: 200, frameHeight: 200 });
+        this.load.spritesheet('potion', 'assets/placeholder/ph_potion.png', { frameWidth: 100, frameHeight: 100 });
+
+        this.load.spritesheet('inventaire', 'assets/placeholder/ph_inventaire.png', { frameWidth: 1920, frameHeight: 1080 });
     }
 
     create ()
@@ -39,19 +54,19 @@ class pc_T1 extends Phaser.Scene{
 
         const map= this.make.tilemap({ key: 'map1', tileWidth:100, tileHeight:100});
         const tileset = map.addTilesetImage('placeholder_tiled', 'tiles');
-        const vert = map.createStaticLayer('vert', tileset, 0, 0);
-        const orange = map.createStaticLayer('orange', tileset, 0, 0);
+        const vert = map.createLayer('vert', tileset, 0, 0);
+        const orange = map.createLayer('orange', tileset, 0, 0);
         orange.setCollisionByExclusion(-1,true);
         
         
         player = this.physics.add.sprite(700, 700, 'dude');
-        //player.setCollideWorldBounds(true);
+        player.setCollideWorldBounds(true);
         player.body.height = 100;
         player.body.setOffset(0, 50);   
 
         this.physics.add.collider(player, orange);
-        const zone = map.createStaticLayer('zone', tileset, 0, 0);
-        const jaune = map.createStaticLayer('jaune', tileset, 0, 0);
+        const zone = map.createLayer('zone', tileset, 0, 0);
+        const jaune = map.createLayer('jaune', tileset, 0, 0);
 
         this.cameras.main.setBounds(0, 0, 1500, 1500);
         this.cameras.main.startFollow(player);
@@ -65,6 +80,24 @@ class pc_T1 extends Phaser.Scene{
      
              }
         }
+
+        tonneau1 = this.physics.add.sprite(1350, 650, 'tonneau');
+        this.physics.add.overlap(tonneau1, epee, hitTonneau);
+        /*tonneau2 = this.physics.add.sprite(1350, 750, 'tonneau');
+        tonneau3 = this.physics.add.sprite(1350, 850, 'tonneau');*/
+
+        function hitTonneau(tonneau1, epee){
+            tonneau1.destroy();
+        }
+
+        // ---------- UI ----------- //
+
+        iconSouls = this.add.sprite(1600, 170, 'iconSouls').setScale(0.6).setScrollFactor(0);
+
+        soulsText = this.add.text(1430, 165, 'âmes: 0', { fontSize: '28px', fill: '#FFF', /*font: '"brush-tipTexe TRIAL"'*/ }).setScrollFactor(0);
+
+        // ---------- FIN UI ----------- //
+
 
 
         //----------------------------------------------------------------  ANIMATION  -------------------------------------------------------------------------//
@@ -116,6 +149,59 @@ class pc_T1 extends Phaser.Scene{
             frameRate: 10,
             repeat: -1
         });
+        //-------------------------------- Ennemi --------------------------------------//
+
+        this.anims.create({
+            key: 'phebb',
+            frames: this.anims.generateFrameNumbers('ennemi', { start: 0, end: 1 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'phebd',
+            frames: this.anims.generateFrameNumbers('ennemi', { start: 2, end: 3 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'phedd',
+            frames: this.anims.generateFrameNumbers('ennemi', { start: 4, end: 5 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'phehd',
+            frames: this.anims.generateFrameNumbers('ennemi', { start: 6, end: 7 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'phehh',
+            frames: this.anims.generateFrameNumbers('ennemi', { start: 8, end: 9 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'phehg',
+            frames: this.anims.generateFrameNumbers('ennemi', { start: 10, end: 11 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'phegg',
+            frames: this.anims.generateFrameNumbers('ennemi', { start: 12, end: 13 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'phebg',
+            frames: this.anims.generateFrameNumbers('ennemi', { start: 14, end: 15 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        //-------------------------------- FIN Ennemi --------------------------------------//
+
         //----------------------------------------------------------------------//
 
         this.anims.create({
@@ -139,6 +225,13 @@ class pc_T1 extends Phaser.Scene{
             repeat: 0
         });
 
+        this.anims.create({
+            key: 'inventaireAnim',
+            frames: this.anims.generateFrameNumbers('inventaire', { start: 0, end: 3 }),
+            frameRate: 10,
+            repeat: 0
+        });
+
         //--------------------------------------------------------------  FIN ANIMATION  ------------------------------------------------------------------------//
 
         //  Input Events
@@ -148,7 +241,8 @@ class pc_T1 extends Phaser.Scene{
             down:Phaser.Input.Keyboard.KeyCodes.S,
             left:Phaser.Input.Keyboard.KeyCodes.Q,
             right:Phaser.Input.Keyboard.KeyCodes.D,
-            epeeInput:Phaser.Input.Keyboard.KeyCodes.SHIFT});
+            epeeInput:Phaser.Input.Keyboard.KeyCodes.SHIFT,
+            inventaireInput:Phaser.Input.Keyboard.KeyCodes.E});
 
 
     }
