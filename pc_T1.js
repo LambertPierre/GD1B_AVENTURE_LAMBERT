@@ -1,22 +1,54 @@
 var player;
-var epee;
+var invinsible = false;
+var mortText;
+
+var mouseCursor;
 var cursors;
 var gameOver = false;
+
+var epees;
+var epee;
+var epeeCD = true;
+var epeeCollected = true;
+
+var boulets;
+var boulet;
+var pistoletCD = true;
+var pistoletCollected = true;
+
+var explosions;
+var explosion;
+
+var megaExplosions;
+var megaExplosion;
+var barrils;
+var barril;
+
+var ennemis;
+var ennemi;
+
+var barricades;
+var barricade;
+var caisses;
+var caisse;
+
+var tonneaux;
+var tonneau;
+
+var souls;
+var soul;
+var iconSouls;
+var soulsStock = 0;
+var soulsText;
+var soulCollected = false;
+
+var vie = 6;
+var vieIcon;
 
 var straf= false;
 var direction = 'bb';
 
-var epeeCD = true;
-
-var iconSouls;
-var souls = 0;
-var soulsText;
-
 var playerApproach = false;
-
-var tonneau1;
-var tonneau2;
-var tonneau3;
 
 class pc_T1 extends Phaser.Scene{
     constructor(){
@@ -47,6 +79,19 @@ class pc_T1 extends Phaser.Scene{
         this.load.spritesheet('potion', 'assets/placeholder/ph_potion.png', { frameWidth: 100, frameHeight: 100 });
 
         this.load.spritesheet('inventaire', 'assets/placeholder/ph_inventaire.png', { frameWidth: 1920, frameHeight: 1080 });
+
+        this.load.spritesheet('souris', 'assets/placeholder/ph_souris.png', { frameWidth: 200, frameHeight: 200 });
+
+        this.load.spritesheet('vie', 'assets/placeholder/ph_vie.png', { frameWidth: 200, frameHeight: 200 });
+        this.load.spritesheet('vie1', 'assets/placeholder/ph_vie1.png', { frameWidth: 200, frameHeight: 200 });
+        this.load.spritesheet('vie2', 'assets/placeholder/ph_vie2.png', { frameWidth: 200, frameHeight: 200 });
+        this.load.spritesheet('vie3', 'assets/placeholder/ph_vie3.png', { frameWidth: 200, frameHeight: 200 });
+        this.load.spritesheet('vie4', 'assets/placeholder/ph_vie4.png', { frameWidth: 200, frameHeight: 200 });
+        this.load.spritesheet('vie5', 'assets/placeholder/ph_vie5.png', { frameWidth: 200, frameHeight: 200 });
+        this.load.spritesheet('vie6', 'assets/placeholder/ph_vie6.png', { frameWidth: 200, frameHeight: 200 });
+        
+        this.load.spritesheet('boulet', 'assets/placeholder/ph_boulet.png', { frameWidth: 100, frameHeight: 100 });
+        this.load.spritesheet('explosion', 'assets/placeholder/ph_explosion.png', { frameWidth: 400, frameHeight: 400 });
     }
 
     create ()
@@ -58,6 +103,7 @@ class pc_T1 extends Phaser.Scene{
         const orange = map.createLayer('orange', tileset, 0, 0);
         orange.setCollisionByExclusion(-1,true);
         
+        mouseCursor = this.add.image(game.input.mousePointer.x, game.input.mousePointer.y, 'souris').setScale(0.3);//.setScrollFactor(1);
         
         player = this.physics.add.sprite(700, 700, 'dude');
         player.setCollideWorldBounds(true);
@@ -71,24 +117,11 @@ class pc_T1 extends Phaser.Scene{
         this.cameras.main.setBounds(0, 0, 1500, 1500);
         this.cameras.main.startFollow(player);
         this.cameras.main.setZoom(1.3);
-    
-        //   soul = this.add.sprite(400, 300, 'soul');
 
-        function changementZone(player, zone){
-            if (player.y<100){
-                this.scene.start("pc_T2");
-     
-             }
-        }
+        boulets = this.physics.add.group();
 
-        tonneau1 = this.physics.add.sprite(1350, 650, 'tonneau');
-        this.physics.add.overlap(tonneau1, epee, hitTonneau);
-        /*tonneau2 = this.physics.add.sprite(1350, 750, 'tonneau');
-        tonneau3 = this.physics.add.sprite(1350, 850, 'tonneau');*/
+        explosions = this.physics.add.group();
 
-        function hitTonneau(tonneau1, epee){
-            tonneau1.destroy();
-        }
 
         // ---------- UI ----------- //
 
@@ -96,6 +129,7 @@ class pc_T1 extends Phaser.Scene{
 
         soulsText = this.add.text(1430, 165, 'âmes: 0', { fontSize: '28px', fill: '#FFF', /*font: '"brush-tipTexe TRIAL"'*/ }).setScrollFactor(0);
 
+        vieIcon = this.add.sprite(1550, 300, 'vie1').setScale(0.75).setScrollFactor(0);
         // ---------- FIN UI ----------- //
 
 
@@ -232,6 +266,40 @@ class pc_T1 extends Phaser.Scene{
             repeat: 0
         });
 
+
+
+        this.anims.create({
+            key: 'vie1',
+            frames: [ { key: 'vie', frame: 0 } ],
+            frameRate: 20
+        });
+        this.anims.create({
+            key: 'vie2',
+            frames: [ { key: 'vie', frame: 1 } ],
+            frameRate: 20
+        });
+        this.anims.create({
+            key: 'vie3',
+            frames: [ { key: 'vie', frame: 2 } ],
+            frameRate: 20
+        });
+        this.anims.create({
+            key: 'vie4',
+            frames: [ { key: 'vie', frame: 3 } ],
+            frameRate: 20
+        });
+        this.anims.create({
+            key: 'vie5',
+            frames: [ { key: 'vie', frame: 4 } ],
+            frameRate: 20
+        });
+        this.anims.create({
+            key: 'vie6',
+            frames: [ { key: 'vie', frame: 5 } ],
+            frameRate: 20
+        });
+
+
         //--------------------------------------------------------------  FIN ANIMATION  ------------------------------------------------------------------------//
 
         //  Input Events
@@ -242,7 +310,7 @@ class pc_T1 extends Phaser.Scene{
             left:Phaser.Input.Keyboard.KeyCodes.Q,
             right:Phaser.Input.Keyboard.KeyCodes.D,
             epeeInput:Phaser.Input.Keyboard.KeyCodes.SHIFT,
-            inventaireInput:Phaser.Input.Keyboard.KeyCodes.E});
+            pistoletInput:Phaser.Input.Keyboard.KeyCodes.SPACE});
 
 
     }
@@ -253,6 +321,9 @@ class pc_T1 extends Phaser.Scene{
         {
             return;
         }
+
+        //cursorPosition();
+
         /*if (soulCollected == false)
         {
             soul.anims.play('soul_anim', true);
@@ -389,7 +460,7 @@ class pc_T1 extends Phaser.Scene{
 
         // ------------------------------------------------------ POUVOIRS -------------------------------------------------------- //
 
-        if (cursors.epeeInput.isDown && epeeCD==true){
+        if (cursors.epeeInput.isDown && epeeCD==true && epeeCollected == true){
             if (direction=='hd'){
                 epee = this.physics.add.sprite(player.x+100,player.y-100, 'epee').setRotation(0.735);
                 epee.body.height = 250;
@@ -459,11 +530,51 @@ class pc_T1 extends Phaser.Scene{
 
         }
 
+        // -------------------------------------------------------- VIE ----------------------------------------------------------- //
+
+        if (vie == 6){
+            vieIcon.destroy()
+            vieIcon = this.add.sprite(1550, 300, 'vie1').setScale(1).setScrollFactor(0);
+        }
+        if (vie == 5){
+            vieIcon.destroy()
+            vieIcon = this.add.sprite(1550, 300, 'vie2').setScale(1).setScrollFactor(0);
+        }
+        if (vie == 4){
+            vieIcon.destroy()
+            vieIcon = this.add.sprite(1550, 300, 'vie3').setScale(1).setScrollFactor(0);
+        }
+        if (vie == 3){
+            vieIcon.destroy()
+            vieIcon = this.add.sprite(1550, 300, 'vie4').setScale(1).setScrollFactor(0);
+        }
+        if (vie == 2){
+            vieIcon.destroy()
+            vieIcon = this.add.sprite(1550, 300, 'vie5').setScale(1).setScrollFactor(0);
+        }
+        if (vie == 1){
+            vieIcon.destroy()
+            vieIcon = this.add.sprite(1550, 300, 'vie6').setScale(1).setScrollFactor(0);
+        }
+
+
+        // ------------------------------------------------------ FIN VIE --------------------------------------------------------- //
+
+        if (cursors.pistoletInput.isDown && pistoletCD == true && pistoletCollected == true){
+            pistoletCD = false;
+            boulet = boulets.create(player.x, player.y, 'boulet');
+            this.physics.moveTo(boulet,  game.input.mousePointer.x,  game.input.mousePointer.y, 1000);
+            setTimeout(function(){pistoletCD = true}, 3000);
+        }
+
         if (player.y<100){
            this.scene.start("pc_T2");
 
         }
-
+        /*function cursorPosition(){
+            mouseCursor.x = game.input.mousePointer.x; //+ player.x - (1500/2);
+            mouseCursor.y = game.input.mousePointer.y;// + player.y - (1500/2);
+        }*/
         
 
     }
