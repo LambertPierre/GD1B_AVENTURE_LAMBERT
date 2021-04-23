@@ -2,10 +2,13 @@
 <html lang="en"> 
 <head> 
     <meta charset="UTF-8" />
+    <link rel="stylesheet" href="style.css">
     <title>Making your first Phaser 3 Game - Part 10</title>
     <script src="//cdn.jsdelivr.net/npm/phaser@3.54.0/dist/phaser.js"></script>
     <script src="pc_T1.js"></script>
     <script src="pc_T2.js"></script>
+    <script src="pc_TFinal.js"></script>
+    <script src="pc_TA1.js"></script>
     <style type="text/css">
         body {
             margin: 0;
@@ -13,7 +16,6 @@
     </style>
 </head>
 <body>
-
 <script type="text/javascript">
 
 var config = {
@@ -27,7 +29,7 @@ var config = {
             debug: true
         }
     },
-    scene: [pc_T1, pc_T2]
+    scene: [pc_T1, pc_T2, pc_TFinal, pc_TA1]
 };
 
 var game = new Phaser.Game(config);

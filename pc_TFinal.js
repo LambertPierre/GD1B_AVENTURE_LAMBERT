@@ -1,26 +1,13 @@
 
-var platforms;
-var cursors;
-
-var invinsible = false;
-
-var gameOver = false;
-
 var ennemi;
 var ennemiMort = false;
 var ennemiStop = false;
 
-var pnj;
-var pnjApp;
-var playerApproach = false;
-
-var inventaire;
-var inventaireOuvert = false;
 
 
-class pc_T2 extends Phaser.Scene{
+class pc_TFinal extends Phaser.Scene{
     constructor(){
-        super("pc_T2");
+        super("pc_TFinal");
     }
     init(data){
     }
@@ -29,7 +16,7 @@ class pc_T2 extends Phaser.Scene{
         this.load.spritesheet('dude', 'assets/placeholder/php_deplacement.png', { frameWidth: 100, frameHeight: 150 });
 
         this.load.image('tiles','assets/placeholder/placeholder_tiled.png');
-        this.load.tilemapTiledJSON('map2','assets/placeholder/pc_T2.json');
+        this.load.tilemapTiledJSON('map3','assets/placeholder/pc_TFinal.json');
 
         this.load.spritesheet('soul', 'assets/items/soul_sprite.png', { frameWidth: 80, frameHeight: 100 });
 
@@ -69,28 +56,15 @@ class pc_T2 extends Phaser.Scene{
     create ()
     {
 
-        const map= this.make.tilemap({ key: 'map2'});
+        const map= this.make.tilemap({ key: 'map3'});
         const tileset = map.addTilesetImage('placeholder_tiled', 'tiles');
         const bleu = map.createLayer('bleu', tileset, 0, 0);
         const vert = map.createLayer('vert', tileset, 0, 0);
         const orange = map.createLayer('orange', tileset, 0, 0);
         orange.setCollisionByExclusion(-1,true);
         bleu.setCollisionByExclusion(-1,true);
-
-        if (position == "T1-T2"){
-            player = this.physics.add.sprite(1300, 1800, 'dude');
-        }
-        else if (position == "TF-T2"){
-            player = this.physics.add.sprite(1100, 400, 'dude');
-        }
-        else if (position == "TA1-T2"){
-            player = this.physics.add.sprite(100, 500, 'dude');
-        }
-        else{
-            player = this.physics.add.sprite(1300, 1800, 'dude');
-        }
         
-        
+        player = this.physics.add.sprite(900, 1800, 'dude');
         //player.setCollideWorldBounds(true);
         player.body.height = 100;
         player.body.setOffset(0, 50);   
@@ -99,7 +73,7 @@ class pc_T2 extends Phaser.Scene{
         this.physics.add.collider(bleu, player);
         const jaune = map.createLayer('jaune', tileset, 0, 0);
 
-        this.cameras.main.setBounds(0, 0, 2500, 2000);
+        this.cameras.main.setBounds(0, 0, 2000, 2000);
         this.cameras.main.startFollow(player);
         this.cameras.main.setZoom(1);
 
@@ -221,10 +195,6 @@ class pc_T2 extends Phaser.Scene{
 
         }
 
-        tonneau = tonneaux.create(550, 1250, 'tonneau');
-        tonneau = tonneaux.create(550, 1350, 'tonneau');
-        tonneau = tonneaux.create(550, 1450, 'tonneau');
-
 
 
         //                     ----------- CAISSES ------------
@@ -244,12 +214,6 @@ class pc_T2 extends Phaser.Scene{
             caisses.destroy();
         }
 
-        caisse = caisses.create(2050, 750, 'caisse');
-        caisse = caisses.create(2050, 650, 'caisse');
-        caisse = caisses.create(2050, 550, 'caisse');
-        caisse = caisses.create(2050, 450, 'caisse');
-        caisse = caisses.create(2050, 350, 'caisse');
-
 
 
         //                     ----------- BARRICADES ------------
@@ -261,10 +225,6 @@ class pc_T2 extends Phaser.Scene{
         function megaExplosionBarricade(barricades, megaExplosions){
             barricades.destroy();
         }
-
-        barricade = barricades.create(1000, 200, 'barricade');
-        barricade = barricades.create(1200, 200, 'barricade');
-        barricade = barricades.create(1400, 200, 'barricade');
 
 
 
@@ -311,8 +271,6 @@ class pc_T2 extends Phaser.Scene{
 
         }
 
-        tonneauPotion = tonneauxPotion.create(650, 1250, 'tonneau');
-        tonneauPotion = tonneauxPotion.create(650, 1350, 'tonneau');
 
         //                     ----------- POTIONS ------------
 
@@ -320,11 +278,10 @@ class pc_T2 extends Phaser.Scene{
 
         function collectPotion(player, potions){
             potionCollected=true;
-            setTimeout(function(){potionCollected=false}, 1000);
+            setTimeout(function(){potionCollected=false}, 100);
             potions.destroy();
-            stockPotion += 1;
-            potionsText.setText( '' + stockPotion);
-            console.log(stockPotion);
+            potionsStock += 1;
+            potionsText.setText(potionsStock);
         }
 
 
@@ -346,7 +303,7 @@ class pc_T2 extends Phaser.Scene{
 
         iconSouls = this.add.sprite(1790, 60, 'iconSouls').setScale(0.8).setScrollFactor(0);
 
-        soulsText = this.add.text(1575, 60, 'âmes: '+ soulsStock, { fontSize: '35px', fill: '#FFF' }).setScrollFactor(0);
+        soulsText = this.add.text(1575, 60, 'âmes: ' + soulsStock, { fontSize: '35px', fill: '#FFF' }).setScrollFactor(0);
 
         vieIcon = this.add.sprite(1730, 220, 'vie1').setScale(1).setScrollFactor(0);
 
@@ -389,20 +346,9 @@ class pc_T2 extends Phaser.Scene{
         cursorBarrilPosition();
 
         if (player.y>1900){
-            position = "T2-T1";
-            this.scene.start("pc_T1");
-            
-        }
-
-        if (player.y<100){
-            position = "T2-TF";
-            this.scene.start("pc_TFinal");
-            
-        }
-
-        if (player.x<90){
-            position = "T2-TA1";
-            this.scene.start("pc_TA1");
+            position = "TF-T2";
+            this.scene.start("pc_T2");
+           
         }
 
         //------------------------------------------------------------------- Déplacement ----------------------------------------------------------------//
@@ -579,13 +525,13 @@ class pc_T2 extends Phaser.Scene{
             mortText = this.physics.add.text((player.x,player.y, 'Vous vous êtes déincarné', { fontSize: '48px', fill: '#FFF' }));
         }
 
-        if (cursors.potionInput.isDown && potionCD == true && stockPotion > 0 && vie < 6){
+        if (cursors.potionInput.isDown && potionCD == true &&  potionsStock > 0){
 
                 vie += 1;
-                stockPotion -= 1;
-                potionsText.setText(stockPotion);
+                potionsStock -= 1;
+                potionsText.setText(potionsStock);
                 potionCD = false
-                setTimeout(function(){potionCD = true}, 1000);
+                setTimeout(function(){potionCD = true}, 10);
             
         }
 

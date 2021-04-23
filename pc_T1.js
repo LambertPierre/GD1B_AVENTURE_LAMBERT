@@ -1,4 +1,5 @@
 var player;
+var gamepad;
 var invinsible = false;
 var mortText;
 
@@ -23,6 +24,10 @@ var megaExplosions;
 var megaExplosion;
 var barrils;
 var barril;
+var barrilActived = false;
+var barrilCD = true;
+var barrilCollected = true;
+var mouseCursorBarril;
 
 var ennemis;
 var ennemi;
@@ -42,13 +47,30 @@ var soulsStock = 0;
 var soulsText;
 var soulCollected = false;
 
+var potions;
+var potion;
+var potionCollected = false;
+var tonneauxPotion;
+var tonneauPotion;
+
 var vie = 6;
 var vieIcon;
+var iconEpee;
+var iconPistolet;
+var iconBarril;
+
+var potionsStock = 2;
+var stockPotion = 0;
+var potionCD = true;
+var iconPotion;
+var potionsText;
 
 var straf= false;
 var direction = 'bb';
 
-var playerApproach = false;
+var position = "";
+
+var playerSpawned = false;
 
 class pc_T1 extends Phaser.Scene{
     constructor(){
@@ -92,6 +114,10 @@ class pc_T1 extends Phaser.Scene{
         
         this.load.spritesheet('boulet', 'assets/placeholder/ph_boulet.png', { frameWidth: 100, frameHeight: 100 });
         this.load.spritesheet('explosion', 'assets/placeholder/ph_explosion.png', { frameWidth: 400, frameHeight: 400 });
+        
+        this.load.spritesheet('barricade', 'assets/placeholder/ph_barricade.png', { frameWidth: 200, frameHeight: 200 });
+        this.load.spritesheet('caisse', 'assets/placeholder/ph_caisse.png', { frameWidth: 100, frameHeight: 100 });
+        this.load.spritesheet('barril', 'assets/placeholder/ph_barril.png', { frameWidth: 100, frameHeight: 100 });
     }
 
     create ()
@@ -103,7 +129,7 @@ class pc_T1 extends Phaser.Scene{
         const orange = map.createLayer('orange', tileset, 0, 0);
         orange.setCollisionByExclusion(-1,true);
         
-        mouseCursor = this.add.image(game.input.mousePointer.x, game.input.mousePointer.y, 'souris').setScale(0.3);//.setScrollFactor(1);
+        
         
         player = this.physics.add.sprite(700, 700, 'dude');
         player.setCollideWorldBounds(true);
@@ -125,14 +151,21 @@ class pc_T1 extends Phaser.Scene{
 
         // ---------- UI ----------- //
 
-        iconSouls = this.add.sprite(1600, 170, 'iconSouls').setScale(0.6).setScrollFactor(0);
+        iconSouls = this.add.sprite(1600, 170, 'iconSouls').setScale(0.6).setScrollFactor(1);
 
-        soulsText = this.add.text(1430, 165, 'âmes: 0', { fontSize: '28px', fill: '#FFF', /*font: '"brush-tipTexe TRIAL"'*/ }).setScrollFactor(0);
+        soulsText = this.add.text(1430, 165, 'âmes: 0', { fontSize: '28px', fill: '#FFF' }).setScrollFactor(0);
 
         vieIcon = this.add.sprite(1550, 300, 'vie1').setScale(0.75).setScrollFactor(0);
+
         // ---------- FIN UI ----------- //
 
+        mouseCursor = this.add.image(game.input.mousePointer.x, game.input.mousePointer.y, 'souris').setScale(0.3).setScrollFactor(0);
+        mouseCursorBarril = this.add.image(game.input.mousePointer.x, game.input.mousePointer.y, 'barril').setScrollFactor(0);
+        mouseCursorBarril.alpha = 0;
 
+        this.input.gamepad.once('down', function (pad, button, index) {
+            gamepad = pad;
+        });
 
         //----------------------------------------------------------------  ANIMATION  -------------------------------------------------------------------------//
         this.anims.create({
@@ -310,7 +343,8 @@ class pc_T1 extends Phaser.Scene{
             left:Phaser.Input.Keyboard.KeyCodes.Q,
             right:Phaser.Input.Keyboard.KeyCodes.D,
             epeeInput:Phaser.Input.Keyboard.KeyCodes.SHIFT,
-            pistoletInput:Phaser.Input.Keyboard.KeyCodes.SPACE});
+            pistoletInput:Phaser.Input.Keyboard.KeyCodes.SPACE,
+            barrilInput:Phaser.Input.Keyboard.KeyCodes.CTRL});
 
 
     }
@@ -322,7 +356,13 @@ class pc_T1 extends Phaser.Scene{
             return;
         }
 
-        //cursorPosition();
+        if (player.y<100){
+            this.scene.start("pc_T2");
+            position = "T1-T2"
+         }
+
+        cursorPosition();
+        cursorBarrilPosition();
 
         /*if (soulCollected == false)
         {
@@ -557,24 +597,42 @@ class pc_T1 extends Phaser.Scene{
             vieIcon = this.add.sprite(1550, 300, 'vie6').setScale(1).setScrollFactor(0);
         }
 
-
         // ------------------------------------------------------ FIN VIE --------------------------------------------------------- //
 
         if (cursors.pistoletInput.isDown && pistoletCD == true && pistoletCollected == true){
             pistoletCD = false;
             boulet = boulets.create(player.x, player.y, 'boulet');
-            this.physics.moveTo(boulet,  game.input.mousePointer.x,  game.input.mousePointer.y, 1000);
+            this.physics.moveTo(boulet,  mouseCursor.x, mouseCursor.y, 1000);
             setTimeout(function(){pistoletCD = true}, 3000);
         }
 
-        if (player.y<100){
-           this.scene.start("pc_T2");
+        //                     ----------- BARRILS ------------
+        /*
+        if (cursors.barrilInput.isDown && barrilCD == true && barrilCollected == true && barrilActived == false){
 
+            mouseCursor.alpha = 0;
+            mouseCursorBarril.alpha = 0.5;
+            setTimeout(function(){barrilActived = true;}, 300);
         }
-        /*function cursorPosition(){
-            mouseCursor.x = game.input.mousePointer.x; //+ player.x - (1500/2);
-            mouseCursor.y = game.input.mousePointer.y;// + player.y - (1500/2);
+        if (cursors.barrilInput.isDown && barrilCD == true && barrilCollected == true && barrilActived == true){
+
+            barrilActived = false;
+            barrilCD = false
+            setTimeout(function(){barrilCD = true}, 3000);
+            barril = barrils.create(game.input.mousePointer.x + player.x - (1920/2), game.input.mousePointer.y + player.y - (1080/2), 'barril');
+            mouseCursorBarril.alpha = 0;
+            mouseCursor.alpha = 1;
+
         }*/
+
+        function cursorPosition(){
+            mouseCursor.x = game.input.mousePointer.x; + player.x - (1920/2);
+            mouseCursor.y = game.input.mousePointer.y; + player.y - (1080/2);
+        }
+        function cursorBarrilPosition(){
+            mouseCursorBarril.x = game.input.mousePointer.x; + player.x - (1920/2);
+            mouseCursorBarril.y = game.input.mousePointer.y; + player.y - (1080/2);
+        }
         
 
     }

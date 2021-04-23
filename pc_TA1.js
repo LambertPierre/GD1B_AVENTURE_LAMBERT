@@ -1,26 +1,16 @@
 
-var platforms;
-var cursors;
-
-var invinsible = false;
-
-var gameOver = false;
-
 var ennemi;
+var vieEnnemi = 6;
 var ennemiMort = false;
+var ennemiInvinsible = false;
 var ennemiStop = false;
-
-var pnj;
-var pnjApp;
-var playerApproach = false;
-
-var inventaire;
-var inventaireOuvert = false;
+var ennemiAggro = false;
 
 
-class pc_T2 extends Phaser.Scene{
+
+class pc_TA1 extends Phaser.Scene{
     constructor(){
-        super("pc_T2");
+        super("pc_TA1");
     }
     init(data){
     }
@@ -29,7 +19,7 @@ class pc_T2 extends Phaser.Scene{
         this.load.spritesheet('dude', 'assets/placeholder/php_deplacement.png', { frameWidth: 100, frameHeight: 150 });
 
         this.load.image('tiles','assets/placeholder/placeholder_tiled.png');
-        this.load.tilemapTiledJSON('map2','assets/placeholder/pc_T2.json');
+        this.load.tilemapTiledJSON('map4','assets/placeholder/pc_TA1.json');
 
         this.load.spritesheet('soul', 'assets/items/soul_sprite.png', { frameWidth: 80, frameHeight: 100 });
 
@@ -69,7 +59,7 @@ class pc_T2 extends Phaser.Scene{
     create ()
     {
 
-        const map= this.make.tilemap({ key: 'map2'});
+        const map= this.make.tilemap({ key: 'map4'});
         const tileset = map.addTilesetImage('placeholder_tiled', 'tiles');
         const bleu = map.createLayer('bleu', tileset, 0, 0);
         const vert = map.createLayer('vert', tileset, 0, 0);
@@ -77,20 +67,14 @@ class pc_T2 extends Phaser.Scene{
         orange.setCollisionByExclusion(-1,true);
         bleu.setCollisionByExclusion(-1,true);
 
-        if (position == "T1-T2"){
+        /*if (position == "T1-T2"){
             player = this.physics.add.sprite(1300, 1800, 'dude');
         }
         else if (position == "TF-T2"){
-            player = this.physics.add.sprite(1100, 400, 'dude');
-        }
-        else if (position == "TA1-T2"){
-            player = this.physics.add.sprite(100, 500, 'dude');
-        }
-        else{
-            player = this.physics.add.sprite(1300, 1800, 'dude');
-        }
+            player = this.physics.add.sprite(1100, 300, 'dude');
+        }*/
         
-        
+        player = this.physics.add.sprite(2300, 500, 'dude');
         //player.setCollideWorldBounds(true);
         player.body.height = 100;
         player.body.setOffset(0, 50);   
@@ -132,62 +116,95 @@ class pc_T2 extends Phaser.Scene{
         //ennemis.setCollideWorldBounds(true);
 
         //                     ----------- ENNEMIS ------------
-        /*
-        this.physics.add.collider(orange, ennemis);
-        this.physics.add.collider(bleu, ennemis);
 
-        this.physics.add.overlap(ennemis, epees, epeeEnnemi);
-        this.physics.add.overlap(ennemis, boulets, bouletEnnemi);
-        this.physics.add.overlap(ennemis, explosions, explosionEnnemi);
-        this.physics.add.overlap(ennemis, megaExplosions, megaExplosionEnnemi);
+        if (vieEnnemi > 0 ){
+            ennemi = ennemis.create(599, 700, 'ennemi');
+            ennemi.body.height = 100;
+            ennemi.body.setOffset(0, 50);  
+        }
+       
+
+        this.physics.add.collider(orange, ennemi);
+        this.physics.add.collider(bleu, ennemi);
+
+        this.physics.add.overlap(ennemi, epees, epeeEnnemi);
+        this.physics.add.overlap(ennemi, boulets, bouletEnnemi);
+        this.physics.add.overlap(ennemi, explosions, explosionEnnemi);
+        this.physics.add.overlap(ennemi, megaExplosions, megaExplosionEnnemi);
 
         this.physics.add.overlap(player, ennemis, hitEnnemi);
 
-        function epeeEnnemi(ennemis, epees){
-            if (ennemis.tint != 0x777777){
-                ennemis.tint = 0x777777;
-
-                ennemiStop = true;
-                ennemi.setVelocityX(0);
-                ennemi.setVelocityY(0);
-                ennemi.alpha = 0.5;
-                setTimeout(function(){ennemi.alpha = 1}, 2000);
-                setTimeout(function(){ennemiStop=false}, 1000);
+        function epeeEnnemi(ennemi, epees){
+            if (ennemiInvinsible == false){
+                vieEnnemi -= 3;
+                if(vieEnnemi <= 0){
+                    ennemi.destroy();
+                    ennemiMort = true;
+                }
+                else{
+                    ennemiInvinsible=true;
+                    ennemiStop = true;
+                    ennemi.setVelocityX(0);
+                    ennemi.setVelocityY(0);
+                    ennemi.alpha = 0.5;
+                    setTimeout(function(){ennemiInvinsible = false}, 1000);
+                    setTimeout(function(){ennemi.alpha = 1}, 1000);
+                    setTimeout(function(){ennemiStop=false}, 1000);  
+                }
             }
-            else{
-            console.log(1);
-            ennemiMort = true;
-            ennemis.destroy();
+            
+                       
 
-            }
             
         }
 
-        function bouletEnnemi(ennemis, boulets){
+        function bouletEnnemi(ennemi, boulets){
             boulets.destroy();
             explosion = explosions.create(boulets.x, boulets.y,'explosion').setScale(0.6);
             setTimeout(function(){explosion.destroy()}, 200);
         }
 
-        function explosionEnnemi(ennemis, explosions){
-            ennemiStop = true;
-            ennemi.setVelocityX(0);
-            ennemi.setVelocityY(0);
-            ennemi.alpha = 0.5;
-            setTimeout(function(){ennemi.alpha = 1}, 2000);
-            setTimeout(function(){ennemiStop=false}, 1000);
+        function explosionEnnemi(ennemi, explosions){
+            if (ennemiInvinsible == false){
+                vieEnnemi -= 2;
+                if(vieEnnemi <= 0){
+                    ennemi.destroy();
+                    ennemiMort = true;
+                }
+                else{
+                    ennemiAggro = true;
+                    ennemiInvinsible=true;
+                    ennemiStop = true;
+                    ennemi.setVelocityX(0);
+                    ennemi.setVelocityY(0);
+                    ennemi.alpha = 0.5;
+                    setTimeout(function(){ennemiInvinsible = false}, 1000);
+                    setTimeout(function(){ennemi.alpha = 1}, 1000);
+                    setTimeout(function(){ennemiStop=false}, 1000);  
+                }
+            }
         }
-
-        function megaExplosionEnnemi(ennemis, megaExplosions){
-            ennemiStop = true;
-            ennemi.setVelocityX(0);
-            ennemi.setVelocityY(0);
-            ennemi.alpha = 0.5;
-            setTimeout(function(){ennemi.alpha = 1}, 2000);
-            setTimeout(function(){ennemiStop=false}, 1000);
+        function megaExplosionEnnemi(ennemi, megaExplosions){
+            if (ennemiInvinsible == false){
+                vieEnnemi -= 4;
+                if(vieEnnemi <= 0){
+                    ennemi.destroy();
+                    ennemiMort = true;
+                }
+                else{
+                    ennemiAggro = true;
+                    ennemiInvinsible=true;
+                    ennemiStop = true;
+                    ennemi.setVelocityX(0);
+                    ennemi.setVelocityY(0);
+                    ennemi.alpha = 0.5;
+                    setTimeout(function(){ennemiInvinsible = false}, 1000);
+                    setTimeout(function(){ennemi.alpha = 1}, 1000);
+                    setTimeout(function(){ennemiStop=false}, 1000);  
+                }
+            }
         }
-
-        function hitEnnemi(player, ennemis){
+        function hitEnnemi(player, ennemi){
             if (invinsible == false){
                 vie -= 1;
                 invinsible = true;
@@ -203,11 +220,8 @@ class pc_T2 extends Phaser.Scene{
 
         }
 
-        ennemi = ennemis.create(900, 801, 'ennemi');
-        ennemi.body.height = 100;
-        ennemi.body.setOffset(0, 50);   
-        */
-
+         
+    
 
         //                     ----------- TONNEAUX ------------
         
@@ -220,10 +234,6 @@ class pc_T2 extends Phaser.Scene{
             tonneaux.destroy();
 
         }
-
-        tonneau = tonneaux.create(550, 1250, 'tonneau');
-        tonneau = tonneaux.create(550, 1350, 'tonneau');
-        tonneau = tonneaux.create(550, 1450, 'tonneau');
 
 
 
@@ -244,11 +254,6 @@ class pc_T2 extends Phaser.Scene{
             caisses.destroy();
         }
 
-        caisse = caisses.create(2050, 750, 'caisse');
-        caisse = caisses.create(2050, 650, 'caisse');
-        caisse = caisses.create(2050, 550, 'caisse');
-        caisse = caisses.create(2050, 450, 'caisse');
-        caisse = caisses.create(2050, 350, 'caisse');
 
 
 
@@ -262,9 +267,7 @@ class pc_T2 extends Phaser.Scene{
             barricades.destroy();
         }
 
-        barricade = barricades.create(1000, 200, 'barricade');
-        barricade = barricades.create(1200, 200, 'barricade');
-        barricade = barricades.create(1400, 200, 'barricade');
+
 
 
 
@@ -278,7 +281,7 @@ class pc_T2 extends Phaser.Scene{
         this.physics.add.overlap(megaExplosions, barrils, explosionBarrils);
         this.physics.add.overlap(player, megaExplosions, playerMegaExplosion);
 
-        function explosionBarrils(epees, explosions, megaExplosions, barrils){
+        function explosionBarrils(barrils){
             megaExplosion = megaExplosions.create(barrils.x, barrils.y,'explosion').setScale(1.3);
             barrils.destroy();
             setTimeout(function(){megaExplosion.destroy()}, 300);
@@ -311,8 +314,6 @@ class pc_T2 extends Phaser.Scene{
 
         }
 
-        tonneauPotion = tonneauxPotion.create(650, 1250, 'tonneau');
-        tonneauPotion = tonneauxPotion.create(650, 1350, 'tonneau');
 
         //                     ----------- POTIONS ------------
 
@@ -346,7 +347,7 @@ class pc_T2 extends Phaser.Scene{
 
         iconSouls = this.add.sprite(1790, 60, 'iconSouls').setScale(0.8).setScrollFactor(0);
 
-        soulsText = this.add.text(1575, 60, 'âmes: '+ soulsStock, { fontSize: '35px', fill: '#FFF' }).setScrollFactor(0);
+        soulsText = this.add.text(1575, 60, 'âmes: ' + soulsStock, { fontSize: '35px', fill: '#FFF' }).setScrollFactor(0);
 
         vieIcon = this.add.sprite(1730, 220, 'vie1').setScale(1).setScrollFactor(0);
 
@@ -388,21 +389,10 @@ class pc_T2 extends Phaser.Scene{
         cursorPosition();
         cursorBarrilPosition();
 
-        if (player.y>1900){
-            position = "T2-T1";
-            this.scene.start("pc_T1");
-            
-        }
+        if (player.x>2400){
+            position = "TA1-T2";
+            this.scene.start("pc_T2");
 
-        if (player.y<100){
-            position = "T2-TF";
-            this.scene.start("pc_TFinal");
-            
-        }
-
-        if (player.x<90){
-            position = "T2-TA1";
-            this.scene.start("pc_TA1");
         }
 
         //------------------------------------------------------------------- Déplacement ----------------------------------------------------------------//
@@ -501,38 +491,53 @@ class pc_T2 extends Phaser.Scene{
         }*/
         // ---------- Ennemi ----------- //
 
-        /*if (Math.pow(Math.pow(player.x-ennemi.x,2)+Math.pow(player.y-ennemi.y,2),1/2)>300 && ennemiStop == false && ennemiMort == false){*/
-            /*setTimeout(function(){ennemi.setVelocityX(250).setVelocityY(0)}, 500);
-            setTimeout(function(){ennemi.setVelocityY(250).setVelocityX(0)}, 500);
-            setTimeout(function(){ennemi.setVelocityX(-250).setVelocityY(0)}, 500);
-            setTimeout(function(){ennemi.setVelocityY(-250).setVelocityX(0)}, 500);
-            setTimeout(function(){rondeFinie1=true}, 4000);*/
-            /*if (ennemi.y<800 && directionEnnemi==1){
-                directionEnnemi=2
+        //if (Math.pow(Math.pow(player.x-ennemi.x,2)+Math.pow(player.y-ennemi.y,2),1/2)>300 && ennemiStop == false && ennemiMort == false){
+
+            /*
+            if (ennemiPath == true){
+                this.physics.moveTo(ennemi, 500, 700, 250);
+            }
+            else if (ennemiPath == false){
+                this.physics.moveTo(ennemi, 1700, 700, 250);
+            }
+            if (ennemi.x==1600 && ennemi.y==700 ){
+                ennemiPath = true;
+                ennemiStop = true;
+                setTimeout(function(){ennemiStop=false}, 1000);
+            }
+            if (ennemi.x==600 && ennemi.y==700 ){
+                ennemiPath = false;
+                ennemiStop = true;
+                setTimeout(function(){ennemiStop=false}, 1000);
+            }
+            */
+            if (ennemi.x < 600 && ennemi.y == 700 && ennemiStop == false && ennemiMort == false){
                 ennemi.setVelocityX(250);
                 ennemi.setVelocityY(0);
             }
-            if (ennemi.x<1500 && directionEnnemi==2){
-                directionEnnemi=3
-                ennemi.setVelocityY(250);
-                ennemi.setVelocityX(0);
-            }
-            if (ennemi.y<1400 && directionEnnemi==3){
-                directionEnnemi=4
+            if (ennemi.x > 1600 && ennemi.y == 700 && ennemiStop == false && ennemiMort == false){
                 ennemi.setVelocityX(-250);
                 ennemi.setVelocityY(0);
             }
-            if (ennemi.x<900 && directionEnnemi==4){
-                directionEnnemi=1
-                ennemi.setVelocityY(-250);
-                ennemi.setVelocityX(0);
-            }*/
+            if(ennemi.y == 700 && 600<ennemi.x>1600 && ennemiStop == false && ennemiMort == false){
 
-        /*}
-        else if (Math.pow((Math.pow(player.x-ennemi.x,2))+(Math.pow(player.y-ennemi.y,2)),1/2)<=300 && ennemiStop == false && ennemiMort == false){
+            }
+            else {
+                //this.physics.moveTo(ennemi, 600, 700, 250);
+
+            }
+
+
+        //}
+        if (Math.pow((Math.pow(player.x-ennemi.x,2))+(Math.pow(player.y-ennemi.y,2)),1/2)<=300){
+            ennemiAggro = true;
+        }
+        if (ennemiAggro == true && ennemiStop == false && ennemiMort == false){
             ennemi.setVelocityX(player.x-ennemi.x);
             ennemi.setVelocityY(player.y-ennemi.y);
-        }*/
+            ennemi.setMaxVelocity(250);
+        }
+
 
         // ------------------------------ Souls ---------------------------------//
         /*
@@ -581,12 +586,12 @@ class pc_T2 extends Phaser.Scene{
 
         if (cursors.potionInput.isDown && potionCD == true && stockPotion > 0 && vie < 6){
 
-                vie += 1;
-                stockPotion -= 1;
-                potionsText.setText(stockPotion);
-                potionCD = false
-                setTimeout(function(){potionCD = true}, 1000);
-            
+            vie += 1;
+            stockPotion -= 1;
+            potionsText.setText(stockPotion);
+            potionCD = false
+            setTimeout(function(){potionCD = true}, 1000);
+        
         }
 
         // ------------------------------------------------------ FIN VIE --------------------------------------------------------- //
