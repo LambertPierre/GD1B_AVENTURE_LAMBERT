@@ -51,7 +51,7 @@ class pc_TA3 extends Phaser.Scene{
         this.load.spritesheet('caisse', 'assets/placeholder/ph_caisse.png', { frameWidth: 100, frameHeight: 100 });
         this.load.spritesheet('barril', 'assets/placeholder/ph_barril.png', { frameWidth: 100, frameHeight: 100 });
 
-        this.load.spritesheet('textPotion', 'assets/placeholder/textes/pc_textPotion.png', { frameWidth: 1920, frameHeight: 1080 });
+        this.load.spritesheet('textPistolet', 'assets/placeholder/textes/pc_textPistolet.png', { frameWidth: 1920, frameHeight: 1080 });
     }
 
     create ()
@@ -354,7 +354,8 @@ class pc_TA3 extends Phaser.Scene{
             epeeInput:Phaser.Input.Keyboard.KeyCodes.SHIFT,
             pistoletInput:Phaser.Input.Keyboard.KeyCodes.SPACE,
             barrilInput:Phaser.Input.Keyboard.KeyCodes.E,
-            potionInput:Phaser.Input.Keyboard.KeyCodes.A});
+            potionInput:Phaser.Input.Keyboard.KeyCodes.A,
+            dialogueInput:Phaser.Input.Keyboard.KeyCodes.F});
             
         if (pistoletCollected == false){
             collectPistolet = this.physics.add.sprite(1200, 1800, 'iconPistolet').setScale(0.5);
@@ -784,6 +785,18 @@ class pc_TA3 extends Phaser.Scene{
         function cursorBarrilPosition(){
             mouseCursorBarril.x = game.input.mousePointer.x; + player.x - (1920/2);
             mouseCursorBarril.y = game.input.mousePointer.y; + player.y - (1080/2);
+        }
+
+        if (pistoletCollected == true && dialoguePistolet == false && textPistoletLance == false){
+            dialogueLance = true;
+            textPistoletLance = true;
+            textPistolet = this.add.sprite(960, 490, 'textPistolet').setScrollFactor(0);
+        }
+        if (cursors.dialogueInput.isDown && dialogueLance == true && textPistoletLance == true){
+            dialogueLance = false;
+            textPistolet.destroy();
+            textPistoletLance = false;
+            dialoguePistolet = true;
         }
     }
 }

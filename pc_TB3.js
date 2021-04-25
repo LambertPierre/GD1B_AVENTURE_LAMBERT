@@ -54,6 +54,8 @@ class pc_TB3 extends Phaser.Scene{
         this.load.spritesheet('barril', 'assets/placeholder/ph_barril.png', { frameWidth: 100, frameHeight: 100 });
 
         this.load.spritesheet('textPotion', 'assets/placeholder/textes/pc_textPotion.png', { frameWidth: 1920, frameHeight: 1080 });
+
+        this.load.spritesheet('textBarril', 'assets/placeholder/textes/pc_textBarril.png', { frameWidth: 1920, frameHeight: 1080 });
     }
 
     create ()
@@ -362,7 +364,8 @@ class pc_TB3 extends Phaser.Scene{
             epeeInput:Phaser.Input.Keyboard.KeyCodes.SHIFT,
             pistoletInput:Phaser.Input.Keyboard.KeyCodes.SPACE,
             barrilInput:Phaser.Input.Keyboard.KeyCodes.E,
-            potionInput:Phaser.Input.Keyboard.KeyCodes.A});
+            potionInput:Phaser.Input.Keyboard.KeyCodes.A,
+            dialogueInput:Phaser.Input.Keyboard.KeyCodes.F});
 
         if (barrilCollected == false){
             collectBarril = this.physics.add.sprite(800, 1200, 'iconBarril').setScale(0.5);
@@ -796,6 +799,18 @@ class pc_TB3 extends Phaser.Scene{
         function cursorBarrilPosition(){
             mouseCursorBarril.x = game.input.mousePointer.x; + player.x - (1920/2);
             mouseCursorBarril.y = game.input.mousePointer.y; + player.y - (1080/2);
+        }
+
+        if (barrilCollected == true && dialogueBarril == false && textBarrilLance == false){
+            dialogueLance = true;
+            textBarrilLance = true;
+            textBarril = this.add.sprite(960, 490, 'textBarril').setScrollFactor(0);
+        }
+        if (cursors.dialogueInput.isDown && dialogueLance == true && textBarrilLance == true){
+            dialogueLance = false;
+            textBarril.destroy();
+            textBarrilLance = false;
+            dialogueBarril = true;
         }
     }
 }

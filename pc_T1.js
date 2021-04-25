@@ -104,6 +104,14 @@ var pnjArt;
 var pnj;
 var pnjApp;
 
+var dialoguePistolet = false;
+var textPistolet;
+var textPistoletLance = false;
+
+var dialogueBarril = false;
+var textBarril;
+var textBarrilLance = false;
+
 var dialoguePotion = false;
 var textPotion;
 var dialoguePotionLance = false;
