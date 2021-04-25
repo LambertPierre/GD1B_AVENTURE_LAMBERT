@@ -1,9 +1,12 @@
+var boss;
+var bossVie = 50;
+var bossInvincible = false;
+var ennemisBoss;
+var ennemiBoss;
+var ennemisBossAggro = true;
+var ennemisWaveAlive = 0;
 
-var ennemi;
-var ennemiMort = false;
-var ennemiStop = false;
-
-
+var winText;
 
 class pc_TFinal extends Phaser.Scene{
     constructor(){
@@ -51,7 +54,11 @@ class pc_TFinal extends Phaser.Scene{
         this.load.spritesheet('barricade', 'assets/placeholder/ph_barricade.png', { frameWidth: 200, frameHeight: 200 });
         this.load.spritesheet('caisse', 'assets/placeholder/ph_caisse.png', { frameWidth: 100, frameHeight: 100 });
         this.load.spritesheet('barril', 'assets/placeholder/ph_barril.png', { frameWidth: 100, frameHeight: 100 });
+
+        this.load.spritesheet('boss', 'assets/placeholder/ph_boss.png', { frameWidth: 600, frameHeight: 600 });
+        this.load.image('winText', 'assets/placeholder/ph_wintext.png', { frameWidth: 1920, frameHeight: 1080 });
     }
+    
 
     create ()
     {
@@ -77,6 +84,7 @@ class pc_TFinal extends Phaser.Scene{
         this.cameras.main.startFollow(player);
         this.cameras.main.setZoom(1);
 
+
         // ----  Groups -------//
 
         boulets = this.physics.add.group();
@@ -87,7 +95,7 @@ class pc_TFinal extends Phaser.Scene{
 
         epees = this.physics.add.group();
 
-        ennemis = this.physics.add.group();
+        ennemisBoss = this.physics.add.group();
 
         caisses = this.physics.add.group({immovable:true});
 
@@ -105,63 +113,70 @@ class pc_TFinal extends Phaser.Scene{
 
         //ennemis.setCollideWorldBounds(true);
 
-        //                     ----------- ENNEMIS ------------
+        // Image de victoire invisible au debut
+
+        winText = this.add.image(960, 540, 'winText').setScrollFactor(0);
+        winText.alpha = 0;
+
+
+        //                     ----------- ENNEMIS BOSS------------
+
+
+        
+
+        /* J'ai tenté de faire un group d'ennemis qui apparaissait en vague est qui aggresserais le joueur instantanément, pendant qu'il attaquais le bos, mais ces ennemis mourrait à la moindre blessures.
+
+        Malheuresement j'ai eu trop de bug que je n'ai pas su corriger donc... le boss est juste un sac à pv qui faut descendre. Ca donne un combat... palpitant ! La consécration du G@M1NG !
+
+
+
+
+
+
         /*
-        this.physics.add.collider(orange, ennemis);
-        this.physics.add.collider(bleu, ennemis);
+        this.physics.add.collider(orange, ennemisBoss);
+        this.physics.add.collider(bleu, ennemisBoss);
 
-        this.physics.add.overlap(ennemis, epees, epeeEnnemi);
-        this.physics.add.overlap(ennemis, boulets, bouletEnnemi);
-        this.physics.add.overlap(ennemis, explosions, explosionEnnemi);
-        this.physics.add.overlap(ennemis, megaExplosions, megaExplosionEnnemi);
+        this.physics.add.overlap(epees, ennemisBoss, epeeEnnemiBoss);
+        this.physics.add.overlap(boulets, ennemisBoss, bouletEnnemiBoss);
+        this.physics.add.overlap(explosions, ennemisBoss, explosionEnnemiBoss);
+        this.physics.add.overlap(megaExplosions, ennemisBoss, megaExplosionEnnemiBoss);
 
-        this.physics.add.overlap(player, ennemis, hitEnnemi);
+        this.physics.add.overlap(player, ennemisBoss, hitEnnemiBoss);
 
-        function epeeEnnemi(ennemis, epees){
-            if (ennemis.tint != 0x777777){
-                ennemis.tint = 0x777777;
+        function epeeEnnemiBoss(epees, ennemisBoss){
 
-                ennemiStop = true;
-                ennemi.setVelocityX(0);
-                ennemi.setVelocityY(0);
-                ennemi.alpha = 0.5;
-                setTimeout(function(){ennemi.alpha = 1}, 2000);
-                setTimeout(function(){ennemiStop=false}, 1000);
-            }
-            else{
-            console.log(1);
-            ennemiMort = true;
-            ennemis.destroy();
-
-            }
+            
+            //ennemisBoss.body.enable = true;
+            ennemisBoss.destroy();
             
         }
 
-        function bouletEnnemi(ennemis, boulets){
+        function bouletEnnemiBoss(boulets, ennemisBoss){
             boulets.destroy();
             explosion = explosions.create(boulets.x, boulets.y,'explosion').setScale(0.6);
             setTimeout(function(){explosion.destroy()}, 200);
         }
 
-        function explosionEnnemi(ennemis, explosions){
-            ennemiStop = true;
-            ennemi.setVelocityX(0);
-            ennemi.setVelocityY(0);
-            ennemi.alpha = 0.5;
-            setTimeout(function(){ennemi.alpha = 1}, 2000);
-            setTimeout(function(){ennemiStop=false}, 1000);
+        function explosionEnnemiBoss(explosions, ennemisBoss){
+
+            
+            //ennemisBoss.body.enable = true;
+            ennemisBoss.destroy();
+            ennemisWaveAlive -= 1;
+            
         }
 
-        function megaExplosionEnnemi(ennemis, megaExplosions){
-            ennemiStop = true;
-            ennemi.setVelocityX(0);
-            ennemi.setVelocityY(0);
-            ennemi.alpha = 0.5;
-            setTimeout(function(){ennemi.alpha = 1}, 2000);
-            setTimeout(function(){ennemiStop=false}, 1000);
+        function megaExplosionEnnemiBoss(megaExplosions, ennemisBoss){
+
+            
+            //ennemisBoss.body.enable = true;
+            ennemisBoss.destroy();
+            ennemisWaveAlive -= 1;
+            
         }
 
-        function hitEnnemi(player, ennemis){
+        function hitEnnemiBoss(players, ennemisBoss){
             if (invinsible == false){
                 vie -= 1;
                 invinsible = true;
@@ -169,23 +184,31 @@ class pc_TFinal extends Phaser.Scene{
                 setTimeout(function(){player.alpha = 1}, 2000);
                 setTimeout(function(){invinsible = false}, 2000);
 
-                ennemiStop = true;
-                ennemi.setVelocityX(0);
-                ennemi.setVelocityY(0);
-                setTimeout(function(){ennemiStop=false}, 1000);
+                ennemisBoss.destroy();
+                ennemisWaveAlive -= 1;
+            
             }
 
         }
+        
+        
+        ennemiBoss = ennemisBoss.create(900, 1300, 'ennemi');
+        ennemiBoss.body.height = 100;
+        ennemiBoss.body.setOffset(0, 50);
+        ennemisWaveAlive += 1;*/
+        
+        /*ennemiBoss = ennemisBoss.create(1500, 800, 'ennemi');
+        ennemiBoss.body.height = 100;
+        ennemiBoss.body.setOffset(0, 50);
 
-        ennemi = ennemis.create(900, 801, 'ennemi');
-        ennemi.body.height = 100;
-        ennemi.body.setOffset(0, 50);   
-        */
-
+        ennemiBoss = ennemisBoss.create(400, 800, 'ennemi');
+        ennemiBoss.body.height = 100;
+        ennemiBoss.body.setOffset(0, 50);*/
+        
 
         //                     ----------- TONNEAUX ------------
         
-        this.physics.add.collider(ennemis,tonneaux);
+        this.physics.add.collider(ennemisBoss,tonneaux);
         this.physics.add.collider(player,tonneaux);
         this.physics.add.overlap(tonneaux, epees, hitTonneaux);
 
@@ -200,7 +223,7 @@ class pc_TFinal extends Phaser.Scene{
         //                     ----------- CAISSES ------------
 
         this.physics.add.collider(player,caisses);
-        this.physics.add.collider(ennemis,caisses);
+        this.physics.add.collider(ennemisBoss,caisses);
         this.physics.add.overlap(caisses,boulets, bouletCaisse);
         this.physics.add.overlap(caisses,explosions, explosionCaisse);
         this.physics.add.overlap(caisses,megaExplosions, explosionCaisse);
@@ -218,7 +241,7 @@ class pc_TFinal extends Phaser.Scene{
 
         //                     ----------- BARRICADES ------------
 
-        this.physics.add.collider(ennemis,barricades);
+        this.physics.add.collider(ennemisBoss,barricades);
         this.physics.add.collider(player,barricades);
         this.physics.add.overlap(barricades,megaExplosions, megaExplosionBarricade);
 
@@ -231,11 +254,8 @@ class pc_TFinal extends Phaser.Scene{
         //                     ----------- BARRILS ------------
         
         this.physics.add.collider(player,barrils);
-        this.physics.add.collider(ennemis,barrils);
+        this.physics.add.collider(ennemisBoss,barrils);
         this.physics.add.overlap(boulets, barrils, explosionBouletBarrils);
-        this.physics.add.overlap(epees, barrils, explosionBarrils);
-        this.physics.add.overlap(explosions, barrils, explosionBarrils);
-        this.physics.add.overlap(megaExplosions, barrils, explosionBarrils);
         this.physics.add.overlap(player, megaExplosions, playerMegaExplosion);
 
         function explosionBarrils(epees, explosions, megaExplosions, barrils){
@@ -261,7 +281,7 @@ class pc_TFinal extends Phaser.Scene{
         }
         //                     -------- TONNEAUXPOTION --------
 
-        this.physics.add.collider(ennemis,tonneauxPotion);
+        this.physics.add.collider(ennemisBoss,tonneauxPotion);
         this.physics.add.collider(player,tonneauxPotion);
         this.physics.add.overlap(tonneauxPotion, epees, hitTonneauxPotion);
 
@@ -299,7 +319,117 @@ class pc_TFinal extends Phaser.Scene{
         }
 
 
-        // ---------- UI ----------- //
+        if (this.input.gamepad.total === 0){
+            this.input.gamepad.once('connected', function (pad, button, index) {
+                paddle = pad;
+                padConnected = true;
+            }); 
+        }
+        else {
+            paddle = this.input.gamepad.pad1;
+        }
+
+
+        cursors = this.input.keyboard.addKeys(
+            {up:Phaser.Input.Keyboard.KeyCodes.Z,
+            down:Phaser.Input.Keyboard.KeyCodes.S,
+            left:Phaser.Input.Keyboard.KeyCodes.Q,
+            right:Phaser.Input.Keyboard.KeyCodes.D,
+            epeeInput:Phaser.Input.Keyboard.KeyCodes.SHIFT,
+            pistoletInput:Phaser.Input.Keyboard.KeyCodes.SPACE,
+            barrilInput:Phaser.Input.Keyboard.KeyCodes.E,
+            potionInput:Phaser.Input.Keyboard.KeyCodes.A});
+
+
+
+        //                                  -------------- BOSS ----------------                        //
+
+
+        boss = this.physics.add.sprite(1000, 800, 'boss');
+
+
+        this.physics.add.overlap(boss, epees, bossEpee);
+        function bossEpee(boss, epees){
+            if (bossInvincible == false){
+                if ( bossVie <= 0 ){
+                    boss.destroy()
+                    winText.alpha = 1;
+                    gameOver = true;
+                   
+                }
+                else{
+                    bossVie -= 3;
+                    if ( bossVie <= 20){
+                        boss.setTint(0x666666)
+                    }
+                    else if ( bossVie <= 40 && bossVie > 20){
+                        boss.setTint(0xaaaaaa)
+                    }
+                    bossInvincible=true;
+                    boss.alpha = 0.5;
+                    setTimeout(function(){bossInvincible = false}, 500);
+                    setTimeout(function(){boss.alpha = 1}, 500);
+                } 
+            }
+        }
+
+        this.physics.add.overlap(boss, boulets, bossBoulet);
+        function bossBoulet(boss, boulets){
+            boulets.destroy();
+            explosion = explosions.create(boulets.x, boulets.y,'explosion').setScale(0.6);
+            setTimeout(function(){explosion.destroy()}, 200);
+        }
+        this.physics.add.overlap(boss, explosions, bossExplosion);
+        function bossExplosion(boss, explosions){
+            if (bossInvincible == false){
+                if ( bossVie <= 0 ){
+                    boss.destroy()
+                    winText.alpha = 1;
+                    gameOver = true;
+                }
+                else{
+                    bossVie -= 3;
+                    if ( bossVie <= 20){
+                        boss.setTint(0x666666)
+                    }
+                    else if ( bossVie <= 40 && bossVie > 20){
+                        boss.setTint(0xaaaaaa)
+                    }
+                    bossInvincible=true;
+                    boss.alpha = 0.5;
+                    setTimeout(function(){bossInvincible = false}, 500);
+                    setTimeout(function(){boss.alpha = 1}, 500);
+                } 
+            }
+        }
+
+        this.physics.add.overlap(boss, megaExplosions, bossMegaExplosion);
+        function bossMegaExplosion(boss, meagExplosions){
+            if (bossInvincible == false){
+                if ( bossVie <= 0 ){
+                    boss.destroy()
+                    winText.alpha = 1;
+                    gameOver = true;
+                }
+                else{
+                    bossVie -= 6;
+                    if ( bossVie <= 20){
+                        boss.setTint(0x666666)
+                    }
+                    else if ( bossVie <= 40 && bossVie > 20){
+                        boss.setTint(0xaaaaaa)
+                    }
+                    bossInvincible=true;
+                    boss.alpha = 0.5;
+                    setTimeout(function(){bossInvincible = false}, 500);
+                    setTimeout(function(){boss.alpha = 1}, 500);
+                } 
+            }
+        }
+
+
+
+         // ---------- UI ----------- //
 
         iconSouls = this.add.sprite(1790, 60, 'iconSouls').setScale(0.8).setScrollFactor(0);
 
@@ -322,18 +452,6 @@ class pc_TFinal extends Phaser.Scene{
         mouseCursorBarril = this.add.image(game.input.mousePointer.x, game.input.mousePointer.y, 'barril').setScrollFactor(0);
         mouseCursorBarril.alpha = 0;
 
-
-        cursors = this.input.keyboard.addKeys(
-            {up:Phaser.Input.Keyboard.KeyCodes.Z,
-            down:Phaser.Input.Keyboard.KeyCodes.S,
-            left:Phaser.Input.Keyboard.KeyCodes.Q,
-            right:Phaser.Input.Keyboard.KeyCodes.D,
-            epeeInput:Phaser.Input.Keyboard.KeyCodes.SHIFT,
-            pistoletInput:Phaser.Input.Keyboard.KeyCodes.SPACE,
-            barrilInput:Phaser.Input.Keyboard.KeyCodes.E,
-            potionInput:Phaser.Input.Keyboard.KeyCodes.A});
-
-
     }
     
     update ()
@@ -342,6 +460,17 @@ class pc_TFinal extends Phaser.Scene{
         {
             return;
         }
+
+        // Les ennemis qui apparaissent ont tous toujours l'aggro sur le joueur.
+        /*
+        if (ennemisBossAggro == true && ennemisWaveAlive > 0 ){
+            ennemiBoss.setVelocityX(player.x-ennemiBoss.x);
+            ennemiBoss.setVelocityY(player.y-ennemiBoss.y);
+            ennemiBoss.setMaxVelocity(250);
+        }*/
+
+
+
         cursorPosition();
         cursorBarrilPosition();
 
@@ -421,78 +550,140 @@ class pc_TFinal extends Phaser.Scene{
             player.anims.play('phpbb',false);
         }
 
-        // ------------------------------------------------------- INVENTAIRE ------------------------------------------------------ //
-        /*
-        if (cursors.inventaireInput.isDown && inventaireOuvert == false){                 
-            inventaire = this.physics.add.sprite(player.x, player.y, 'inventaire')
-            inventaire.anims.play('inventaireAnim', true);
-            inventaireOuvert = true;
-        }
-        if (cursors.inventaireInput.isDown && inventaireOuvert == true){                 
-            inventaire.destroy();
-        }
-        */
-        // ------------------------------------------------------- FIN INVENTAIRE ------------------------------------------------------ //
+        // ------------------------------------------------- CONTROLE MANETTE ---------------------------------------------------//
 
+        if (padConnected) {
 
-        // ------------------------------------------------------- EVENEMENT ------------------------------------------------------ //
-
-        /*if (player.y<1100 && playerApproach == false){
-            playerApproach = true;
-            pnj = this.add.sprite(1300, 700, 'pnj');
-            pnj.anims.play('pnj_anim', true);
-            pnjApp = this.add.sprite(1300, 700, 'pnjApp').setScale(1.5);
-            pnjApp.anims.play('pnjApp_anim', true);
-            setTimeout(function(){pnjApp.destroy()}, 500);
-        }*/
-        // ---------- Ennemi ----------- //
-
-        /*if (Math.pow(Math.pow(player.x-ennemi.x,2)+Math.pow(player.y-ennemi.y,2),1/2)>300 && ennemiStop == false && ennemiMort == false){*/
-            /*setTimeout(function(){ennemi.setVelocityX(250).setVelocityY(0)}, 500);
-            setTimeout(function(){ennemi.setVelocityY(250).setVelocityX(0)}, 500);
-            setTimeout(function(){ennemi.setVelocityX(-250).setVelocityY(0)}, 500);
-            setTimeout(function(){ennemi.setVelocityY(-250).setVelocityX(0)}, 500);
-            setTimeout(function(){rondeFinie1=true}, 4000);*/
-            /*if (ennemi.y<800 && directionEnnemi==1){
-                directionEnnemi=2
-                ennemi.setVelocityX(250);
-                ennemi.setVelocityY(0);
+            if(paddle.right && paddle.up){
+                player.setVelocityX(300);
+                player.setVelocityY(-300);
+                player.anims.play('phphd', true);                         // Déplacements vers la diagonale haut doite
+                direction = 'hd';
             }
-            if (ennemi.x<1500 && directionEnnemi==2){
-                directionEnnemi=3
-                ennemi.setVelocityY(250);
-                ennemi.setVelocityX(0);
+            if(paddle.right && paddle.down){
+                player.setVelocityX(300);
+                player.setVelocityY(300);
+                player.anims.play('phpbd', true);                         // Déplacements vers la diagonale bas droite 
+                direction = 'bd';
             }
-            if (ennemi.y<1400 && directionEnnemi==3){
-                directionEnnemi=4
-                ennemi.setVelocityX(-250);
-                ennemi.setVelocityY(0);
+            if(paddle.left && paddle.up){
+                player.setVelocityX(-300);
+                player.setVelocityY(-300);
+                player.anims.play('phphg', true);                        // Déplacements vers la diagonale haut gauche  
+                direction = 'hg';
             }
-            if (ennemi.x<900 && directionEnnemi==4){
-                directionEnnemi=1
-                ennemi.setVelocityY(-250);
-                ennemi.setVelocityX(0);
-            }*/
+            if(paddle.left && paddle.down){
+                pplayer.setVelocityX(-300);
+                player.setVelocityY(300);
+                player.anims.play('phpbg', true);                        // Déplacements vers la diagonale bas gauche
+                direction = 'bg'; 
+            }
+            if(paddle.right){
+                player.setVelocityX(400);
+                player.setVelocityY(0);
+                player.anims.play('phpdd', true);                        // Déplacement vers la droite
+                direction = 'dd';
+            }
+            if(paddle.left){
+                player.setVelocityX(-400);
+                player.setVelocityY(0);
+                player.anims.play('phpgg', true);                        // Déplacement vers la gauche
+                direction = 'gg';
+            }
+            if(paddle.up){
+                player.setVelocityY(-400);
+                player.setVelocityX(0);
+                player.anims.play('phphh', true);                        // Déplacement vers le haut
+                direction = 'hh';
+            }
+            if(paddle.down){
+                player.setVelocityY(400);
+                player.setVelocityX(0);
+                player.anims.play('phpbb', true);                        // Déplacement vers le bas
+                direction = 'bb';
+            }
+            else{
+                player.setVelocityX(0);
+                player.setVelocityY(0);
+                player.anims.play('phpbb',false);
+            }
 
-        /*}
-        else if (Math.pow((Math.pow(player.x-ennemi.x,2))+(Math.pow(player.y-ennemi.y,2)),1/2)<=300 && ennemiStop == false && ennemiMort == false){
-            ennemi.setVelocityX(player.x-ennemi.x);
-            ennemi.setVelocityY(player.y-ennemi.y);
-        }*/
+            if (paddle.Y){
+                if (direction=='hd'){
+                    epee = this.physics.add.sprite(player.x+100,player.y-100, 'epee').setRotation(0.735);
+                    epee.body.height = 250;
+                    epee.body.width = 250;
+                    epee.body.setOffset(25, -25);
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='hg'){
+                    epee = this.physics.add.sprite(player.x-100,player.y-100, 'epee').setRotation(-0.735);
+                    epee.body.height = 250;
+                    epee.body.width = 250;
+                    epee.body.setOffset(25, -25);
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='bd'){
+                    epee = this.physics.add.sprite(player.x+100,player.y+100, 'epee').setRotation(2.305);
+                    epee.body.height = 250;
+                    epee.body.width = 250;
+                    epee.body.setOffset(25, -25);
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='bg'){
+                    epee = this.physics.add.sprite(player.x-100,player.y+100, 'epee').setRotation(-2.305);
+                    epee.body.height = 250;
+                    epee.body.width = 250;
+                    epee.body.setOffset(25, -25);
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='dd'){
+                    epee = this.physics.add.sprite(player.x+150,player.y, 'epee').setRotation(1.57);
+                    epee.body.height = 300;
+                    epee.body.width = 200;
+                    epee.body.setOffset(50, -50);   
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='gg'){
+                    epee = this.physics.add.sprite(player.x-150,player.y, 'epee').setRotation(-1.57);
+                    epee.body.height = 300;
+                    epee.body.width = 200;
+                    epee.body.setOffset(50, -50);  
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='bb'){
+                    epee = this.physics.add.sprite(player.x,player.y+150, 'epee').setRotation(-3.14);
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='hh'){
+                    epee = this.physics.add.sprite(player.x,player.y-150, 'epee');
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+    
 
-        // ------------------------------ Souls ---------------------------------//
-        /*
-        if (Math.pow(Math.pow(player.x-soul.x,2)+Math.pow(player.y-soul.y,2),1/2)<300 && soulCollected == false){
-            soul.anims.play('soul_anim', true);
-            soul.setVelocityX(player.x-soul.x);
-            soul.setVelocityY(player.y-soul.y);
+    
+                // Mes deux autres pouvoirs ne sont pas compatible avec une manettes... mince ^^'
+            }
         }
-        else if (Math.pow(Math.pow(player.x-soul.x,2)+Math.pow(player.y-soul.y,2),1/2)>300 && soulCollected == false){
-            soul.setVelocityX(0);
-            soul.setVelocityY(0);
-            soul.anims.play('soul_anim', true);
-        }
-        */
+
+        
+    
 
         // -------------------------------------------------------- VIE ----------------------------------------------------------- //
 
@@ -688,5 +879,80 @@ class pc_TFinal extends Phaser.Scene{
             mouseCursorBarril.x = game.input.mousePointer.x; + player.x - (1920/2);
             mouseCursorBarril.y = game.input.mousePointer.y; + player.y - (1080/2);
         }
+
+        // -------------------------------------------------------- BOSS ---------------------------------------------------//
+
+        /*
+        if (bossSpawn == true && ennemisWaveAlive == 0){
+            if ( bossVie == 0 ){
+
+            }
+            else{
+                if ( bossVie <= 20){
+
+                    ennemiBoss = ennemisBoss.create(900, 1300, 'ennemi');
+                    ennemiBoss.body.height = 100;
+                    ennemiBoss.body.setOffset(0, 50);
+                    ennemisWaveAlive += 1;
+
+                    ennemiBoss = ennemisBoss.create(1500, 800, 'ennemi');
+                    ennemiBoss.body.height = 100;
+                    ennemiBoss.body.setOffset(0, 50);
+                    ennemisWaveAlive += 1;
+
+                    ennemiBoss = ennemisBoss.create(400, 800, 'ennemi');
+                    ennemiBoss.body.height = 100;
+                    ennemiBoss.body.setOffset(0, 50);
+                    ennemisWaveAlive += 1;
+
+                    ennemiBoss = ennemisBoss.create(1000, 400, 'ennemi');
+                    ennemiBoss.body.height = 100;
+                    ennemiBoss.body.setOffset(0, 50);
+                    ennemisWaveAlive += 1;
+
+                    bossSpawn = false
+                    setTimeout(function(){bossSpawn = true}, 6000);
+                }
+                else if ( bossVie <= 40 && bossVie > 20){
+
+                    ennemiBoss = ennemisBoss.create(900, 1300, 'ennemi');
+                    ennemiBoss.body.height = 100;
+                    ennemiBoss.body.setOffset(0, 50);
+                    ennemisWaveAlive += 1;
+
+                    ennemiBoss = ennemisBoss.create(1500, 800, 'ennemi');
+                    ennemiBoss.body.height = 100;
+                    ennemiBoss.body.setOffset(0, 50);
+                    ennemisWaveAlive += 1;
+
+                    ennemiBoss = ennemisBoss.create(400, 800, 'ennemi');
+                    ennemiBoss.body.height = 100;
+                    ennemiBoss.body.setOffset(0, 50);
+                    ennemisWaveAlive += 1;
+
+
+                    bossSpawn = false
+                    setTimeout(function(){bossSpawn = true}, 6000);
+                }
+                else{
+
+                    ennemiBoss = ennemisBoss.create(1500, 800, 'ennemi');
+                    ennemiBoss.body.height = 100;
+                    ennemiBoss.body.setOffset(0, 50);
+                    ennemisWaveAlive += 1;
+
+                    ennemiBoss = ennemisBoss.create(400, 800, 'ennemi');
+                    ennemiBoss.body.height = 100;
+                    ennemiBoss.body.setOffset(0, 50);
+                    ennemisWaveAlive += 1;
+
+
+                    bossSpawn = false
+                    setTimeout(function(){bossSpawn = true}, 6000);
+                }
+
+            } 
+        }*/
     }
+
 }

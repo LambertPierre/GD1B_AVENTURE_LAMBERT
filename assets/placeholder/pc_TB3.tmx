@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.5" tiledversion="1.5.0" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="100" tileheight="100" infinite="0" nextlayerid="5" nextobjectid="1">
- <tileset firstgid="1" source="placeholder_tiled.tsx"/>
+ <editorsettings>
+  <export target="pc_TB3.json" format="json"/>
+ </editorsettings>
+ <tileset firstgid="1" name="placeholder_tiled" tilewidth="100" tileheight="100" tilecount="200" columns="20">
+  <image source="placeholder_tiled.png" width="2000" height="1000"/>
+ </tileset>
  <layer id="2" name="bleu" width="20" height="20">
   <data encoding="csv">
 43,43,43,43,43,43,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -18,7 +23,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,43,43,43,43,43,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,24,43,43,43,43,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,43,43,43,43,43,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,43,43,43,43,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,43,43,43,0,0,
@@ -69,7 +74,7 @@
 34,34,34,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,75,
 34,34,34,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,75,
 34,34,34,0,0,0,0,0,0,0,75,75,75,51,145,145,145,0,0,75,
-34,34,34,34,34,34,0,0,0,0,75,75,75,75,75,145,145,145,145,75,
+34,34,34,34,34,34,0,0,0,0,75,75,75,75,75,145,145,145,0,75,
 34,34,34,34,34,34,0,0,0,0,75,75,75,75,75,75,75,75,75,75
 </data>
  </layer>

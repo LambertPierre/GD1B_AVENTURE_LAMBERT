@@ -1,7 +1,11 @@
 var player;
-var gamepad;
 var invinsible = false;
 var mortText;
+
+var gamepad;
+var paddle;
+var padConnected;
+var pad;
 
 var mouseCursor;
 var cursors;
@@ -10,12 +14,12 @@ var gameOver = false;
 var epees;
 var epee;
 var epeeCD = true;
-var epeeCollected = true;
+var epeeCollected = false;
 
 var boulets;
 var boulet;
 var pistoletCD = true;
-var pistoletCollected = true;
+var pistoletCollected = false;
 
 var explosions;
 var explosion;
@@ -26,7 +30,7 @@ var barrils;
 var barril;
 var barrilActived = false;
 var barrilCD = true;
-var barrilCollected = true;
+var barrilCollected = false;
 var mouseCursorBarril;
 
 var ennemis;
@@ -70,7 +74,39 @@ var direction = 'bb';
 
 var position = "";
 
-var playerSpawned = false;
+var collectEpee;
+var collectEpe;
+var collectPistolet;
+var collectBarril;
+
+var dialogueLance = false;
+var dialogueCD = true;
+
+var dialogue1 = false;
+var text1;
+var text1Passe = false;
+var text2;
+var dialogue2 = false;
+var text3;
+var text3Passe = false;
+var text4;
+var text4Passe = false;
+var text5Lance = false;
+var text5;
+var dialogue3 = false;
+var text6Lance = false;
+var text6;
+var dialogue4 = false;
+var text7Lance = false;
+var text7;
+
+var pnjArt;
+var pnj;
+var pnjApp;
+
+var dialoguePotion = false;
+var textPotion;
+var dialoguePotionLance = false;
 
 class pc_T1 extends Phaser.Scene{
     constructor(){
@@ -118,6 +154,12 @@ class pc_T1 extends Phaser.Scene{
         this.load.spritesheet('barricade', 'assets/placeholder/ph_barricade.png', { frameWidth: 200, frameHeight: 200 });
         this.load.spritesheet('caisse', 'assets/placeholder/ph_caisse.png', { frameWidth: 100, frameHeight: 100 });
         this.load.spritesheet('barril', 'assets/placeholder/ph_barril.png', { frameWidth: 100, frameHeight: 100 });
+
+        this.load.spritesheet('text1', 'assets/placeholder/textes/pc_text1.png', { frameWidth: 1920, frameHeight: 1080 });
+        this.load.spritesheet('text2', 'assets/placeholder/textes/pc_text2.png', { frameWidth: 1920, frameHeight: 1080 });
+
+        this.load.spritesheet('pnj_art', 'assets/items/pnj_art.png', { frameWidth: 960, frameHeight: 1080 });
+
     }
 
     create ()
@@ -131,10 +173,12 @@ class pc_T1 extends Phaser.Scene{
         
         
         
-        player = this.physics.add.sprite(700, 700, 'dude');
+        player = this.physics.add.sprite(750, 700, 'dude');
         player.setCollideWorldBounds(true);
         player.body.height = 100;
-        player.body.setOffset(0, 50);   
+        player.body.setOffset(0, 50);
+        
+        
 
         this.physics.add.collider(player, orange);
         const zone = map.createLayer('zone', tileset, 0, 0);
@@ -143,6 +187,7 @@ class pc_T1 extends Phaser.Scene{
         this.cameras.main.setBounds(0, 0, 1500, 1500);
         this.cameras.main.startFollow(player);
         this.cameras.main.setZoom(1.3);
+        this.cameras.main.fadeIn(1000);
 
         boulets = this.physics.add.group();
 
@@ -163,9 +208,17 @@ class pc_T1 extends Phaser.Scene{
         mouseCursorBarril = this.add.image(game.input.mousePointer.x, game.input.mousePointer.y, 'barril').setScrollFactor(0);
         mouseCursorBarril.alpha = 0;
 
-        this.input.gamepad.once('down', function (pad, button, index) {
-            gamepad = pad;
-        });
+        // ------------------------- Mannette --------------------------------- //
+
+        if (this.input.gamepad.total === 0){
+            this.input.gamepad.once('connected', function (pad, button, index) {
+                paddle = pad;
+                padConnected = true;
+            }); 
+        }
+        else {
+            paddle = this.input.gamepad.pad1;
+        }
 
         //----------------------------------------------------------------  ANIMATION  -------------------------------------------------------------------------//
         this.anims.create({
@@ -344,8 +397,23 @@ class pc_T1 extends Phaser.Scene{
             right:Phaser.Input.Keyboard.KeyCodes.D,
             epeeInput:Phaser.Input.Keyboard.KeyCodes.SHIFT,
             pistoletInput:Phaser.Input.Keyboard.KeyCodes.SPACE,
-            barrilInput:Phaser.Input.Keyboard.KeyCodes.CTRL});
+            barrilInput:Phaser.Input.Keyboard.KeyCodes.E,
+            dialogueInput:Phaser.Input.Keyboard.KeyCodes.F});
 
+
+        //   ----------------------- Apparition du joueur ------------------------------ //
+
+
+        if (dialogue1 == false){
+            dialogueLance = true;
+            pnj = this.add.sprite(750, 450, 'pnj');
+            pnj.anims.play('pnj_anim', true);
+            pnjApp = this.add.sprite(750, 450, 'pnjApp').setScale(1.5);
+            pnjApp.anims.play('pnjApp_anim', true);
+            setTimeout(function(){pnjApp.destroy()}, 500);
+            pnjArt = this.add.sprite(1440, 540, 'pnj_art').setScale(0.7).setScrollFactor(0);
+            text1 = this.add.sprite(960, 540, 'text1').setScale(0.7).setScrollFactor(0);
+        }
 
     }
     
@@ -422,7 +490,7 @@ class pc_T1 extends Phaser.Scene{
 
         
         
-        if (cursors.right.isDown && cursors.up.isDown && !cursors.left.isDown && !cursors.down.isDown){
+        if (cursors.right.isDown && cursors.up.isDown && !cursors.left.isDown && !cursors.down.isDown && dialogueLance == false){
             /*player.x += speed/Math.sqrt(2);           // Déplacements vers la diagonale haut doite                     
             player.y -= speed/Math.sqrt(2); */
             player.setVelocityX(300);
@@ -431,7 +499,7 @@ class pc_T1 extends Phaser.Scene{
             direction = 'hd';
         }
 
-        else if (cursors.left.isDown && cursors.up.isDown && !cursors.down.isDown && !cursors.right.isDown){
+        else if (cursors.left.isDown && cursors.up.isDown && !cursors.down.isDown && !cursors.right.isDown && dialogueLance == false){
             /*player.x -= speed/Math.sqrt(2);           // Déplacements vers la diagonale haut gauche                      
             player.y -= speed/Math.sqrt(2); */
             player.setVelocityX(-300);
@@ -440,7 +508,7 @@ class pc_T1 extends Phaser.Scene{
             direction = 'hg';                      
         }
 
-        else if (cursors.down.isDown && cursors.left.isDown && !cursors.up.isDown && !cursors.right.isDown){
+        else if (cursors.down.isDown && cursors.left.isDown && !cursors.up.isDown && !cursors.right.isDown && dialogueLance == false){
             /*player.x -= speed/Math.sqrt(2);           // Déplacements vers la diagonale bas gauche                      
             player.y += speed/Math.sqrt(2);*/
             player.setVelocityX(-300);
@@ -449,7 +517,7 @@ class pc_T1 extends Phaser.Scene{
             direction = 'bg';                       
         }
 
-        else if (cursors.down.isDown && cursors.right.isDown && !cursors.left.isDown && !cursors.up.isDown){
+        else if (cursors.down.isDown && cursors.right.isDown && !cursors.left.isDown && !cursors.up.isDown && dialogueLance == false){
             /*player.x += speed/Math.sqrt(2);           // Déplacements vers la diagonale bas droite                      
             player.y += speed/Math.sqrt(2);*/
             player.setVelocityX(300);
@@ -461,7 +529,7 @@ class pc_T1 extends Phaser.Scene{
         // -- Déplacements Horizontaux Verticaux --
 
 
-        else if (cursors.right.isDown && !cursors.left.isDown && !cursors.down.isDown && !cursors.up.isDown){
+        else if (cursors.right.isDown && !cursors.left.isDown && !cursors.down.isDown && !cursors.up.isDown && dialogueLance == false){
             /*player.x += speed;*/
             player.setVelocityX(400);
             player.setVelocityY(0);
@@ -469,7 +537,7 @@ class pc_T1 extends Phaser.Scene{
             direction = 'dd';
         }
 
-        else if (cursors.left.isDown && !cursors.right.isDown && !cursors.down.isDown && !cursors.up.isDown){
+        else if (cursors.left.isDown && !cursors.right.isDown && !cursors.down.isDown && !cursors.up.isDown && dialogueLance == false){
             /*player.x -= speed;*/
             player.setVelocityX(-400);
             player.setVelocityY(0);
@@ -477,7 +545,7 @@ class pc_T1 extends Phaser.Scene{
             direction = 'gg';
         }
 
-        else if (cursors.down.isDown && !cursors.left.isDown && !cursors.up.isDown && !cursors.right.isDown){
+        else if (cursors.down.isDown && !cursors.left.isDown && !cursors.up.isDown && !cursors.right.isDown && dialogueLance == false){
             /*player.y += speed;*/
             player.setVelocityY(400);
             player.setVelocityX(0);
@@ -485,7 +553,7 @@ class pc_T1 extends Phaser.Scene{
             direction = 'bb';
         }
 
-        else if (cursors.up.isDown && !cursors.left.isDown && !cursors.down.isDown && !cursors.right.isDown){
+        else if (cursors.up.isDown && !cursors.left.isDown && !cursors.down.isDown && !cursors.right.isDown && dialogueLance == false){
             /*player.y -= speed;*/
             player.setVelocityY(-400);
             player.setVelocityX(0);
@@ -498,9 +566,142 @@ class pc_T1 extends Phaser.Scene{
             player.anims.play('phpbb',false);
         }
 
+        // ------------------------------------------------- CONTROLE MANETTE ---------------------------------------------------//
+
+        if (padConnected) {
+
+            if(paddle.right && paddle.up){
+                player.setVelocityX(300);
+                player.setVelocityY(-300);
+                player.anims.play('phphd', true);                         // Déplacements vers la diagonale haut doite
+                direction = 'hd';
+            }
+            if(paddle.right && paddle.down){
+                player.setVelocityX(300);
+                player.setVelocityY(300);
+                player.anims.play('phpbd', true);                         // Déplacements vers la diagonale bas droite 
+                direction = 'bd';
+            }
+            if(paddle.left && paddle.up){
+                player.setVelocityX(-300);
+                player.setVelocityY(-300);
+                player.anims.play('phphg', true);                        // Déplacements vers la diagonale haut gauche  
+                direction = 'hg';
+            }
+            if(paddle.left && paddle.down){
+                pplayer.setVelocityX(-300);
+                player.setVelocityY(300);
+                player.anims.play('phpbg', true);                        // Déplacements vers la diagonale bas gauche
+                direction = 'bg'; 
+            }
+            if(paddle.right){
+                player.setVelocityX(400);
+                player.setVelocityY(0);
+                player.anims.play('phpdd', true);                        // Déplacement vers la droite
+                direction = 'dd';
+            }
+            if(paddle.left){
+                player.setVelocityX(-400);
+                player.setVelocityY(0);
+                player.anims.play('phpgg', true);                        // Déplacement vers la gauche
+                direction = 'gg';
+            }
+            if(paddle.up){
+                player.setVelocityY(-400);
+                player.setVelocityX(0);
+                player.anims.play('phphh', true);                        // Déplacement vers le haut
+                direction = 'hh';
+            }
+            if(paddle.down){
+                player.setVelocityY(400);
+                player.setVelocityX(0);
+                player.anims.play('phpbb', true);                        // Déplacement vers le bas
+                direction = 'bb';
+            }
+            else{
+                player.setVelocityX(0);
+                player.setVelocityY(0);
+                player.anims.play('phpbb',false);
+            }
+
+            if (paddle.Y){
+                if (direction=='hd'){
+                    epee = this.physics.add.sprite(player.x+100,player.y-100, 'epee').setRotation(0.735);
+                    epee.body.height = 250;
+                    epee.body.width = 250;
+                    epee.body.setOffset(25, -25);
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='hg'){
+                    epee = this.physics.add.sprite(player.x-100,player.y-100, 'epee').setRotation(-0.735);
+                    epee.body.height = 250;
+                    epee.body.width = 250;
+                    epee.body.setOffset(25, -25);
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='bd'){
+                    epee = this.physics.add.sprite(player.x+100,player.y+100, 'epee').setRotation(2.305);
+                    epee.body.height = 250;
+                    epee.body.width = 250;
+                    epee.body.setOffset(25, -25);
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='bg'){
+                    epee = this.physics.add.sprite(player.x-100,player.y+100, 'epee').setRotation(-2.305);
+                    epee.body.height = 250;
+                    epee.body.width = 250;
+                    epee.body.setOffset(25, -25);
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='dd'){
+                    epee = this.physics.add.sprite(player.x+150,player.y, 'epee').setRotation(1.57);
+                    epee.body.height = 300;
+                    epee.body.width = 200;
+                    epee.body.setOffset(50, -50);   
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='gg'){
+                    epee = this.physics.add.sprite(player.x-150,player.y, 'epee').setRotation(-1.57);
+                    epee.body.height = 300;
+                    epee.body.width = 200;
+                    epee.body.setOffset(50, -50);  
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='bb'){
+                    epee = this.physics.add.sprite(player.x,player.y+150, 'epee').setRotation(-3.14);
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='hh'){
+                    epee = this.physics.add.sprite(player.x,player.y-150, 'epee');
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+    
+
+    
+                // Mes deux autres pouvoirs ne sont pas compatible avec une manettes... mince ^^'
+            }
+        }
+
+        
         // ------------------------------------------------------ POUVOIRS -------------------------------------------------------- //
 
-        if (cursors.epeeInput.isDown && epeeCD==true && epeeCollected == true){
+        if (cursors.epeeInput.isDown && epeeCD==true && epeeCollected == true && dialogueLance == false){
             if (direction=='hd'){
                 epee = this.physics.add.sprite(player.x+100,player.y-100, 'epee').setRotation(0.735);
                 epee.body.height = 250;
@@ -599,7 +800,7 @@ class pc_T1 extends Phaser.Scene{
 
         // ------------------------------------------------------ FIN VIE --------------------------------------------------------- //
 
-        if (cursors.pistoletInput.isDown && pistoletCD == true && pistoletCollected == true){
+        if (cursors.pistoletInput.isDown && pistoletCD == true && pistoletCollected == true && dialogueLance == false){
             pistoletCD = false;
             boulet = boulets.create(player.x, player.y, 'boulet');
             this.physics.moveTo(boulet,  mouseCursor.x, mouseCursor.y, 1000);
@@ -634,6 +835,26 @@ class pc_T1 extends Phaser.Scene{
             mouseCursorBarril.y = game.input.mousePointer.y; + player.y - (1080/2);
         }
         
+        // ------------------------------------------------------ DIALOGUE --------------------------------------------------------- //
+
+        if (cursors.dialogueInput.isDown && dialogueLance == true && text1Passe == false){
+            text1.destroy();
+            text2 = this.add.sprite(960, 540, 'text2').setScale(0.7).setScrollFactor(0);
+            text1Passe = true;
+            dialogueCD = false;
+            setTimeout(function(){dialogueCD = true}, 300);
+        }
+        else if (cursors.dialogueInput.isDown && dialogueLance == true && text1Passe == true && dialogueCD == true){
+            dialogueLance = false;
+            pnj.anims.play('pnj_anim', false);
+            pnj.destroy();
+            pnjApp = this.add.sprite(750, 450, 'pnjApp').setScale(1.5);
+            pnjApp.anims.play('pnjApp_anim', true);
+            setTimeout(function(){pnjApp.destroy()}, 500);
+            pnjArt.destroy();
+            text2.destroy();
+            dialogue1 = true;
+        }
 
     }
 }

@@ -73,8 +73,12 @@ class pc_TA1 extends Phaser.Scene{
         else if (position == "TF-T2"){
             player = this.physics.add.sprite(1100, 300, 'dude');
         }*/
-        
-        player = this.physics.add.sprite(2300, 500, 'dude');
+        if (position == "T2-TA1"){
+            player = this.physics.add.sprite(2300, 500, 'dude');
+        }
+        else if (position == "TA2-TA1"){
+            player = this.physics.add.sprite(100, 900, 'dude');
+        }
         //player.setCollideWorldBounds(true);
         player.body.height = 100;
         player.body.setOffset(0, 50);   
@@ -138,6 +142,7 @@ class pc_TA1 extends Phaser.Scene{
             if (ennemiInvinsible == false){
                 vieEnnemi -= 3;
                 if(vieEnnemi <= 0){
+                    soul = souls.create(ennemi.x, ennemi.y, 'soul');
                     ennemi.destroy();
                     ennemiMort = true;
                 }
@@ -168,6 +173,7 @@ class pc_TA1 extends Phaser.Scene{
             if (ennemiInvinsible == false){
                 vieEnnemi -= 2;
                 if(vieEnnemi <= 0){
+                    soul = souls.create(ennemi.x, ennemi.y, 'soul');
                     ennemi.destroy();
                     ennemiMort = true;
                 }
@@ -188,6 +194,7 @@ class pc_TA1 extends Phaser.Scene{
             if (ennemiInvinsible == false){
                 vieEnnemi -= 4;
                 if(vieEnnemi <= 0){
+                    soul = souls.create(ennemi.x, ennemi.y, 'soul');
                     ennemi.destroy();
                     ennemiMort = true;
                 }
@@ -276,9 +283,6 @@ class pc_TA1 extends Phaser.Scene{
         this.physics.add.collider(player,barrils);
         this.physics.add.collider(ennemis,barrils);
         this.physics.add.overlap(boulets, barrils, explosionBouletBarrils);
-        this.physics.add.overlap(epees, barrils, explosionBarrils);
-        this.physics.add.overlap(explosions, barrils, explosionBarrils);
-        this.physics.add.overlap(megaExplosions, barrils, explosionBarrils);
         this.physics.add.overlap(player, megaExplosions, playerMegaExplosion);
 
         function explosionBarrils(barrils){
@@ -366,6 +370,19 @@ class pc_TA1 extends Phaser.Scene{
         mouseCursorBarril = this.add.image(game.input.mousePointer.x, game.input.mousePointer.y, 'barril').setScrollFactor(0);
         mouseCursorBarril.alpha = 0;
 
+        
+        // ------------------------- Mannette --------------------------------- //
+
+        if (this.input.gamepad.total === 0){
+            this.input.gamepad.once('connected', function (pad, button, index) {
+                paddle = pad;
+                padConnected = true;
+            }); 
+        }
+        else {
+            paddle = this.input.gamepad.pad1;
+        }
+
 
         cursors = this.input.keyboard.addKeys(
             {up:Phaser.Input.Keyboard.KeyCodes.Z,
@@ -389,11 +406,19 @@ class pc_TA1 extends Phaser.Scene{
         cursorPosition();
         cursorBarrilPosition();
 
+        // -------- Switch de scènes ----------- //
+
         if (player.x>2400){
             position = "TA1-T2";
             this.scene.start("pc_T2");
 
         }
+        if (player.x<100){
+            position = "TA1-TA2";
+            this.scene.start("pc_TA2");
+
+        }
+
 
         //------------------------------------------------------------------- Déplacement ----------------------------------------------------------------//
 
@@ -464,6 +489,140 @@ class pc_TA1 extends Phaser.Scene{
             player.setVelocityY(0);
             player.anims.play('phpbb',false);
         }
+
+        // ------------------------------------------------- CONTROLE MANETTE ---------------------------------------------------//
+
+        if (padConnected) {
+
+            if(paddle.right && paddle.up){
+                player.setVelocityX(300);
+                player.setVelocityY(-300);
+                player.anims.play('phphd', true);                         // Déplacements vers la diagonale haut doite
+                direction = 'hd';
+            }
+            if(paddle.right && paddle.down){
+                player.setVelocityX(300);
+                player.setVelocityY(300);
+                player.anims.play('phpbd', true);                         // Déplacements vers la diagonale bas droite 
+                direction = 'bd';
+            }
+            if(paddle.left && paddle.up){
+                player.setVelocityX(-300);
+                player.setVelocityY(-300);
+                player.anims.play('phphg', true);                        // Déplacements vers la diagonale haut gauche  
+                direction = 'hg';
+            }
+            if(paddle.left && paddle.down){
+                pplayer.setVelocityX(-300);
+                player.setVelocityY(300);
+                player.anims.play('phpbg', true);                        // Déplacements vers la diagonale bas gauche
+                direction = 'bg'; 
+            }
+            if(paddle.right){
+                player.setVelocityX(400);
+                player.setVelocityY(0);
+                player.anims.play('phpdd', true);                        // Déplacement vers la droite
+                direction = 'dd';
+            }
+            if(paddle.left){
+                player.setVelocityX(-400);
+                player.setVelocityY(0);
+                player.anims.play('phpgg', true);                        // Déplacement vers la gauche
+                direction = 'gg';
+            }
+            if(paddle.up){
+                player.setVelocityY(-400);
+                player.setVelocityX(0);
+                player.anims.play('phphh', true);                        // Déplacement vers le haut
+                direction = 'hh';
+            }
+            if(paddle.down){
+                player.setVelocityY(400);
+                player.setVelocityX(0);
+                player.anims.play('phpbb', true);                        // Déplacement vers le bas
+                direction = 'bb';
+            }
+            else{
+                player.setVelocityX(0);
+                player.setVelocityY(0);
+                player.anims.play('phpbb',false);
+            }
+
+            if (paddle.Y){
+                if (direction=='hd'){
+                    epee = this.physics.add.sprite(player.x+100,player.y-100, 'epee').setRotation(0.735);
+                    epee.body.height = 250;
+                    epee.body.width = 250;
+                    epee.body.setOffset(25, -25);
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='hg'){
+                    epee = this.physics.add.sprite(player.x-100,player.y-100, 'epee').setRotation(-0.735);
+                    epee.body.height = 250;
+                    epee.body.width = 250;
+                    epee.body.setOffset(25, -25);
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='bd'){
+                    epee = this.physics.add.sprite(player.x+100,player.y+100, 'epee').setRotation(2.305);
+                    epee.body.height = 250;
+                    epee.body.width = 250;
+                    epee.body.setOffset(25, -25);
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='bg'){
+                    epee = this.physics.add.sprite(player.x-100,player.y+100, 'epee').setRotation(-2.305);
+                    epee.body.height = 250;
+                    epee.body.width = 250;
+                    epee.body.setOffset(25, -25);
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='dd'){
+                    epee = this.physics.add.sprite(player.x+150,player.y, 'epee').setRotation(1.57);
+                    epee.body.height = 300;
+                    epee.body.width = 200;
+                    epee.body.setOffset(50, -50);   
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='gg'){
+                    epee = this.physics.add.sprite(player.x-150,player.y, 'epee').setRotation(-1.57);
+                    epee.body.height = 300;
+                    epee.body.width = 200;
+                    epee.body.setOffset(50, -50);  
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='bb'){
+                    epee = this.physics.add.sprite(player.x,player.y+150, 'epee').setRotation(-3.14);
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+                if (direction=='hh'){
+                    epee = this.physics.add.sprite(player.x,player.y-150, 'epee');
+                    epeeCD=false;
+                    setTimeout(function(){epeeCD=true}, 1000);
+                    setTimeout(function(){epee.destroy()}, 300);
+                }
+    
+
+    
+                // Mes deux autres pouvoirs ne sont pas compatible avec une manettes... mince ^^'
+            }
+        }
+
+        
 
         // ------------------------------------------------------- INVENTAIRE ------------------------------------------------------ //
         /*
@@ -611,14 +770,14 @@ class pc_TA1 extends Phaser.Scene{
         if (pistoletCollected == false || pistoletCD == false ){
             iconPistolet.alpha = 0.5;
         }
-        if ( pistoletCD == true ){
+        if ( pistoletCD == true  && pistoletCollected == true){
             iconPistolet.alpha = 1;
         } 
 
         if (barrilCollected == false || barrilCD == false ){
             iconBarril.alpha = 0.5;
         }
-        if ( barrilCD == true ){
+        if ( barrilCD == true  && barrilCollected == true){
             iconBarril.alpha = 1;
         }
 
